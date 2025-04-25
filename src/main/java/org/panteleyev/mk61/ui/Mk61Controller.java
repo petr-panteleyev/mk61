@@ -4,27 +4,37 @@
  */
 package org.panteleyev.mk61.ui;
 
-import javafx.application.Platform;
+import javafx.animation.AnimationTimer;
+import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.controlsfx.control.SegmentedButton;
-import org.panteleyev.fx.Controller;
+import org.panteleyev.fx.WindowManager;
 import org.panteleyev.mk61.core.AngleMode;
 import org.panteleyev.mk61.engine.Engine;
-import org.panteleyev.mk61.engine.IR;
+import org.panteleyev.mk61.engine.Indicator;
 import org.panteleyev.mk61.engine.KeyboardButton;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -32,15 +42,34 @@ import static org.panteleyev.fx.LabelFactory.label;
 import static org.panteleyev.fx.MenuFactory.menu;
 import static org.panteleyev.fx.MenuFactory.menuBar;
 import static org.panteleyev.fx.MenuFactory.menuItem;
+import static org.panteleyev.fx.dialogs.FileChooserBuilder.fileChooser;
 import static org.panteleyev.fx.grid.GridBuilder.gridPane;
 import static org.panteleyev.fx.grid.GridRowBuilder.gridRow;
+import static org.panteleyev.mk61.core.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
+import static org.panteleyev.mk61.settings.Settings.settings;
+import static org.panteleyev.mk61.ui.Accelerators.SHORTCUT_1;
 
-public class Mk61Controller extends Controller {
+public class Mk61Controller extends BaseController {
     public static final String APP_TITLE = "МК-61";
 
-    private final Engine engine = new Engine(this::showIndicator);
+    private final Engine engine = new Engine();
+
+    private final AnimationTimer animationTimer = new AnimationTimer() {
+        @Override
+        public void handle(long l) {
+            var deviceModel = engine.deviceModel();
+            showIndicator(deviceModel.getIndicator());
+            if (stackAndMemoryController.isVisible()) {
+                stackAndMemoryController.renderDeviceModel(deviceModel);
+            }
+        }
+    };
+
+    private static final FileChooser.ExtensionFilter EXTENSION_FILTER =
+            new FileChooser.ExtensionFilter("Дамп памяти", "*.txt");
 
     private final BorderPane root = new BorderPane();
+    private final HBox toolBox = new HBox(10);
 
     private final ToggleButton onButton = new ToggleButton("Вкл");
 
@@ -55,11 +84,13 @@ public class Mk61Controller extends Controller {
             new Label(" "), new Label(" "), new Label(" "), new Label(" ")
     };
 
+    private final StackAndMemoryController stackAndMemoryController = new StackAndMemoryController();
+
     private final Consumer<KeyboardButton> keyboardButtonConsumer = engine::processButton;
 
     public Mk61Controller(Stage stage) {
-        super(stage, "/main.css");
-//        stage.setResizable(false);
+        super(stage);
+        stage.setResizable(false);
         stage.getIcons().add(Picture.ICON.getImage());
         root.getStyleClass().add("root");
 
@@ -77,11 +108,15 @@ public class Mk61Controller extends Controller {
         center.setAlignment(Pos.CENTER);
         center.setFillWidth(true);
         root.setCenter(center);
+        root.setRight(toolBox);
 
         setupWindow(root);
         getStage().sizeToScene();
 
+        animationTimer.start();
         onButton.fire();
+
+        settings().loadStagePosition(this);
     }
 
     @Override
@@ -92,15 +127,15 @@ public class Mk61Controller extends Controller {
     private MenuBar createMenuBar() {
         return menuBar(
                 menu("Файл",
-//                        menuItem("Сохранить...", _ -> onSaveMemoryDump()),
-//                        menuItem("Загрузить...", _ -> onLoadMemoryDump()),
-//                        new SeparatorMenuItem(),
+                        menuItem("Сохранить...", _ -> onSaveMemoryDump()),
+                        menuItem("Загрузить...", _ -> onLoadMemoryDump()),
+                        new SeparatorMenuItem(),
                         menuItem("Выход", _ -> onExit())
-                )//,
-//                menu("Инструменты",
-//                        checkMenuItem("Регистры и стек", false, SHORTCUT_1, this::onRegistersAndStackPanel),
+                ),
+                menu("Окно",
+                        menuItem("Регистры и память", SHORTCUT_1, this::onRegistersAndStackWindow)
 //                        checkMenuItem("Память", false, SHORTCUT_2, this::onMemoryPanel)
-//                ),
+                )//,
 //                menu("Справка"
 //                        menuItem("О программе", _ -> new AboutDialog(this).showAndWait())
 //                )
@@ -269,32 +304,118 @@ public class Mk61Controller extends Controller {
     }
 
     private void onExit() {
+        engine.powerOff();
         getStage().fireEvent(new WindowEvent(getStage(), WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
     private void onPowerOn() {
         engine.powerOn();
+        stackAndMemoryController.turnOn();
+        animationTimer.start();
     }
 
     private void onPowerOff() {
+        animationTimer.stop();
         engine.powerOff();
+        stackAndMemoryController.turnOff();
+        showIndicator(Indicator.EMPTY);
     }
 
-    private void showIndicator(IR ir) {
-        Platform.runLater(() -> {
-            var ri = ir.indicator();
-            var dots = ir.dots();
+    private void showIndicator(Indicator indicator) {
+        var ri = indicator.indicator();
+        var dots = indicator.dots();
 //            var opacity = engine.automaticMode().get() ? 0.3 : 1.0;
-            var opacity = 1.0;
+        var opacity = 1.0;
 
-            for (int i = 0; i < 12; i++) {
-                digitCells[i].setText(Long.toString(ri & 0xF, 16).toUpperCase());
-                digitCells[i].setOpacity(opacity);
-                dotCells[i].setText((dots & 1) == 1 ? "." : " ");
-                dotCells[i].setOpacity(opacity);
-                ri = ri >> 4;
-                dots = dots >> 1;
+        for (int i = 0; i < 12; i++) {
+            digitCells[i].setText(Long.toString(ri & 0xF, 16).toUpperCase());
+            digitCells[i].setOpacity(opacity);
+            dotCells[i].setText((dots & 1) == 1 ? "." : " ");
+            dotCells[i].setOpacity(opacity);
+            ri = ri >> 4;
+            dots = dots >> 1;
+        }
+    }
+
+    private void onRegistersAndStackWindow(ActionEvent event) {
+        if (!stackAndMemoryController.isVisible()) {
+            stackAndMemoryController.show();
+        }
+//
+//
+//        if (event.getSource() instanceof CheckMenuItem menuItem) {
+//            if (menuItem.isSelected()) {
+//                toolBox.getChildren().addFirst(stackAndMemoryController);
+//            } else {
+//                toolBox.getChildren().remove(stackAndMemoryController);
+//            }
+//            getStage().sizeToScene();
+//        }
+    }
+
+    private void onSaveMemoryDump() {
+        var file = fileChooser("Сохранить дамп памяти", List.of(EXTENSION_FILTER)).showSaveDialog(getStage());
+        if (file == null) {
+            return;
+        }
+
+        try (var out = new OutputStreamWriter(new FileOutputStream(file))) {
+            var bytes = engine.deviceModel().getMemory();
+            for (int i = 0; i < bytes.length; i++) {
+                if (i != 0 && i % 10 == 0) {
+                    out.write("\n");
+                }
+                out.write(String.format("%02X ", bytes[i]));
             }
-        });
+            out.flush();
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    private void onLoadMemoryDump() {
+        var file = fileChooser("Загрузить дамп памяти", List.of(EXTENSION_FILTER)).showOpenDialog(getStage());
+        if (file == null) {
+            return;
+        }
+
+        try (var reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
+            var codes = new int[PROGRAM_MEMORY_SIZE];
+            var index = 0;
+
+            var lines = reader.lines().toList();
+            outerLoop:
+            for (var line : lines) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
+                var strings = line.trim().split(" ");
+                for (var str : strings) {
+                    if (index >= codes.length) {
+                        break outerLoop;
+                    }
+                    codes[index++] = Integer.parseInt(str, 16);
+                }
+            }
+            engine.deviceModel().setMemoryUpload(codes);
+            engine.deviceModel().setMemoryUploadFlag(true);
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+
+    @Override
+    protected void onWindowHiding() {
+        super.onWindowHiding();
+        closeChildWindows();
+        settings().saveWindowsSettings();
+    }
+
+    private void closeChildWindows() {
+        WindowManager.newInstance().getControllerStream()
+                .filter(c -> c != this)
+                .toList()
+                .forEach(c -> ((BaseController) c).onClose());
     }
 }

@@ -4,16 +4,17 @@
  */
 package org.panteleyev.mk61.core;
 
-import org.panteleyev.mk61.engine.IR;
-import org.panteleyev.mk61.engine.IndicatorCallback;
+import org.panteleyev.mk61.engine.Register;
 import org.panteleyev.mk61.util.ThreadUtil;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.panteleyev.mk61.core.MCommands.ik1302_mrom;
 import static org.panteleyev.mk61.core.MCommands.ik1303_mrom;
 import static org.panteleyev.mk61.core.MCommands.ik1306_mrom;
+import static org.panteleyev.mk61.core.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.core.Synchro.ik1302_srom;
 import static org.panteleyev.mk61.core.Synchro.ik1303_srom;
 import static org.panteleyev.mk61.core.Synchro.ik1306_srom;
@@ -22,6 +23,32 @@ import static org.panteleyev.mk61.core.UCommands.ik1303_urom;
 import static org.panteleyev.mk61.core.UCommands.ik1306_urom;
 
 public class Emulator implements Runnable {
+    private static final int REG_2_OFFSET = 0;
+    private static final int REG_3_OFFSET = REG_2_OFFSET + 42;
+    private static final int REG_A_OFFSET = 0;
+    private static final int REG_B_OFFSET = 0;
+    private static final int REG_C_OFFSET = 0;
+    private static final int REG_D_OFFSET = REG_3_OFFSET + 42;
+    private static final int REG_E_OFFSET = REG_D_OFFSET + 42;
+    private static final int REG_0_OFFSET = REG_E_OFFSET + 42;
+    private static final int REG_1_OFFSET = REG_0_OFFSET + 42;
+    private static final int REG_8_OFFSET = 0;
+    private static final int REG_9_OFFSET = REG_8_OFFSET + 42;
+    private static final int REG_4_OFFSET = REG_9_OFFSET + 42;
+    private static final int REG_5_OFFSET = REG_4_OFFSET + 42;
+    private static final int REG_6_OFFSET = REG_5_OFFSET + 42;
+    private static final int REG_7_OFFSET = REG_6_OFFSET + 42;
+
+    private static final int[][] MEMORY_ADDRESS_SWAPS = {
+            {1, 2, 3, 4, 5, 14, 13, 12, 6, 7, 8, 9, 10, 11, 0},
+            {10, 11, 6, 7, 2, 3, 4, 5, 0, 1, 14, 13, 12, 8, 9},
+            {14, 13, 12, 10, 11, 6, 7, 8, 9, 4, 5, 0, 1, 2, 3}
+    };
+    private static final int[][] MEMORY_ADDRESS_PAGES = {
+            {1, 41}, {1, 83}, {1, 125}, {1, 167}, {1, 209}, {1, 251}, {2, 41}, {2, 83}, {2, 125},
+            {2, 167}, {2, 209}, {2, 251}, {3, 41}, {4, 41}, {5, 41}
+    };
+
     enum RunningState {
         RUNNING(0), STOPPED(1), STOPPING_NORMAL(2), STOPPING_FORCED(3);
 
@@ -50,11 +77,11 @@ public class Emulator implements Runnable {
 
     private final AtomicInteger runningState = new AtomicInteger(RunningState.STOPPED.state);
 
-    private final IndicatorCallback indicatorCallback;
+    private final Mk61DeviceModel deviceModel;
 
-    public Emulator(AtomicInteger angleMode, IndicatorCallback indicatorCallback) {
+    public Emulator(AtomicInteger angleMode, Mk61DeviceModel deviceModel) {
         this.angleMode = angleMode;
-        this.indicatorCallback = indicatorCallback;
+        this.deviceModel = deviceModel;
     }
 
     public void run() {
@@ -64,8 +91,9 @@ public class Emulator implements Runnable {
         }
 
         if (runningState.get() != RunningState.STOPPING_FORCED.state) {
-            while (!(IR2_1.microtick == 84 && syncCounter == 0))
+            while (!(IR2_1.microtick == 84 && syncCounter == 0)) {
                 tick42();
+            }
         }
 
         runningState.set(RunningState.STOPPED.state);
@@ -121,7 +149,9 @@ public class Emulator implements Runnable {
             shift += 4;
         }
 
-        indicatorCallback.display(new IR(ir, dots));
+        deviceModel.setIndicator(ir, dots);
+        // Задержка нужна, чтобы мигание экрана было более или менее заметно.
+        ThreadUtil.sleep(Duration.ofMillis(10));
     }
 
     void tick() {
@@ -148,6 +178,11 @@ public class Emulator implements Runnable {
         if (IR2_1.microtick == 84) {
             syncCounter = (syncCounter + 1) % 5;
             if (IK1302.redraw_indic && syncCounter == 4) {
+                if (deviceModel.getMemoryUploadFlag()) {
+                    loadMemory(deviceModel.getMemoryUpload());
+                }
+
+                dumpMemory();
                 return true;
             }
         }
@@ -156,7 +191,6 @@ public class Emulator implements Runnable {
 
     void step() {
         int i, idx;
-        boolean renew = false;
         IK1303.keyb_y.set(1);
         IK1303.keyb_x.set(angleMode.get());
         for (int ix = 0; ix < 560; ix++) {
@@ -173,21 +207,141 @@ public class Emulator implements Runnable {
                 for (i = 0; i <= 2; i++) ind_comma[i + 9] = IK1302.ind_comma[12 - i];
                 IK1302.redraw_indic = false;
             } else {
-                for (i = 0; i < 12; i++) {
-                    indicator[i] = 15;
-                    ind_comma[i] = false;
-                    IK1302.redraw_indic = false;
-                }
+                Arrays.fill(indicator, 0xF);
+                Arrays.fill(ind_comma, false);
             }
 
-            renew = false;
+            var renew = false;
             for (idx = 0; idx < 12; idx++) {
                 if (indicator_old[idx] != indicator[idx]) renew = true;
                 indicator_old[idx] = indicator[idx];
                 if (ind_comma_old[idx] != ind_comma[idx]) renew = true;
                 ind_comma_old[idx] = ind_comma[idx];
             }
-            if (renew) show_indicator();
+            if (renew) {
+                deviceModel.setPc(getProgramCounter());
+                updateCallStack();
+                show_indicator();
+            }
+            updateModel();
         }
+    }
+
+    // Сбор состояния в пригодном для отображения вид
+
+    private void updateCallStack() {
+        int callStackIndex = 4;
+        for (int i = 1; i <= 25; i += 6) {
+            var r = ((IK1302.R[i + 3] & 0xF) << 4) | (IK1302.R[i] & 0xF);
+            deviceModel.setCallStack(callStackIndex--, r);
+        }
+    }
+
+    private void updateModel() {
+        if (syncCounter == 4 && IR2_1.microtick == 84) {
+            deviceModel.setX(getRegister(IK1303.M, 1));
+            deviceModel.setY(getRegister(IK1302.M, 1));
+            deviceModel.setZ(getRegister(IR2_2.M, 85));
+            deviceModel.setT(getRegister(IR2_2.M, 127));
+            deviceModel.setX1(getRegister(IK1306.M, 1));
+
+            deviceModel.setRegister(0, getRegister(IR2_2.M, REG_0_OFFSET));
+            deviceModel.setRegister(1, getRegister(IR2_2.M, REG_1_OFFSET));
+            deviceModel.setRegister(2, getRegister(IR2_2.M, REG_2_OFFSET));
+            deviceModel.setRegister(3, getRegister(IR2_2.M, REG_3_OFFSET));
+            deviceModel.setRegister(4, getRegister(IR2_1.M, REG_4_OFFSET));
+            deviceModel.setRegister(5, getRegister(IR2_1.M, REG_5_OFFSET));
+            deviceModel.setRegister(6, getRegister(IR2_1.M, REG_6_OFFSET));
+            deviceModel.setRegister(7, getRegister(IR2_1.M, REG_7_OFFSET));
+            deviceModel.setRegister(8, getRegister(IR2_1.M, REG_8_OFFSET));
+            deviceModel.setRegister(9, getRegister(IR2_1.M, REG_9_OFFSET));
+            deviceModel.setRegister(10, getRegister(IK1306.M, REG_A_OFFSET));
+            deviceModel.setRegister(11, getRegister(IK1303.M, REG_B_OFFSET));
+            deviceModel.setRegister(12, getRegister(IK1302.M, REG_C_OFFSET));
+            deviceModel.setRegister(13, getRegister(IR2_2.M, REG_D_OFFSET));
+            deviceModel.setRegister(14, getRegister(IR2_2.M, REG_E_OFFSET));
+        }
+    }
+
+
+    private int[] cmdAddress(int address, int page) {
+        int addr1 = address / 7;
+        int addr2 = address % 7;
+        if (addr2 == 0) {
+            return MEMORY_ADDRESS_PAGES[MEMORY_ADDRESS_SWAPS[page][addr1]];
+        } else {
+            return new int[]{
+                    MEMORY_ADDRESS_PAGES[MEMORY_ADDRESS_SWAPS[page][addr1]][0],
+                    MEMORY_ADDRESS_PAGES[MEMORY_ADDRESS_SWAPS[page][addr1]][1] - 42 + addr2 * 6,
+            };
+        }
+    }
+
+    public void saveCmd(int address, int cmdCode) {
+        int hi = cmdCode / 16;
+        int lo = cmdCode % 16;
+        int[] addr = cmdAddress(address, IR2_1.microtick / 84);
+        switch (addr[0]) {
+            case 1:
+                IR2_1.M[addr[1]] = hi;
+                IR2_1.M[addr[1] - 3] = lo;
+                break;
+            case 2:
+                IR2_2.M[addr[1]] = hi;
+                IR2_2.M[addr[1] - 3] = lo;
+                break;
+            case 3:
+                IK1302.M[addr[1]] = hi;
+                IK1302.M[addr[1] - 3] = lo;
+                break;
+            case 4:
+                IK1303.M[addr[1]] = hi;
+                IK1303.M[addr[1] - 3] = lo;
+                break;
+            case 5:
+                IK1306.M[addr[1]] = hi;
+                IK1306.M[addr[1] - 3] = lo;
+                break;
+        }
+    }
+
+    private void dumpMemory() {
+        int[] memory = new int[PROGRAM_MEMORY_SIZE];
+
+        for (int address = 0; address < PROGRAM_MEMORY_SIZE; address++) {
+            int[] addr = cmdAddress(address, IR2_1.microtick / 84);
+            int cmdCode = switch (addr[0]) {
+                case 1 -> IR2_1.M[addr[1]] * 16 + IR2_1.M[addr[1] - 3];
+                case 2 -> IR2_2.M[addr[1]] * 16 + IR2_2.M[addr[1] - 3];
+                case 3 -> IK1302.M[addr[1]] * 16 + IK1302.M[addr[1] - 3];
+                case 4 -> IK1303.M[addr[1]] * 16 + IK1303.M[addr[1] - 3];
+                case 5 -> IK1306.M[addr[1]] * 16 + IK1306.M[addr[1] - 3];
+                default -> 0;
+            };
+            memory[address] = cmdCode;
+        }
+
+        deviceModel.setMemory(memory);
+    }
+
+    private void loadMemory(int[] memory) {
+        for (int i = 0; i < memory.length; i++) {
+            saveCmd(i, memory[i]);
+        }
+        deviceModel.setMemoryUploadFlag(false);
+    }
+
+    private int getProgramCounter() {
+        return (IK1302.R[31] & 0xF) | ((IK1302.R[34] & 0xF) << 4);
+    }
+
+    private long getRegister(int[] mcuRegister, int startBit) {
+        long register = 0;
+        int ind = startBit;
+        for (int i = 0; i < 12; i++) {
+            register = Register.setTetrad(register, i, mcuRegister[ind]);
+            ind += 3;
+        }
+        return register;
     }
 }

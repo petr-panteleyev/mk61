@@ -22,10 +22,10 @@ import static org.panteleyev.freedesktop.Utility.isLinux;
 
 public class ApplicationFiles {
     public enum AppFile {
-        EEPROM("eeprom.txt");
+        WINDOWS("windows.xml");
 
-        static final Set<AppFile> DATA_FILES = Set.of(
-                EEPROM
+        static final Set<AppFile> CONFIG_FILES = Set.of(
+                WINDOWS
         );
 
         private final String fileName;
@@ -65,8 +65,8 @@ public class ApplicationFiles {
         }
         logDirectory = dataDirectory.resolve(LOGS_DIR_NAME);
 
-        for (var appFile : AppFile.DATA_FILES) {
-            fileMap.put(appFile, dataDirectory.resolve(appFile.getFileName()));
+        for (var appFile : AppFile.CONFIG_FILES) {
+            fileMap.put(appFile, configDirectory.resolve(appFile.getFileName()));
         }
     }
 

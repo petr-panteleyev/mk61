@@ -13,14 +13,16 @@ class Memory {
     public int out = 0;
     public int microtick = 0;
 
-    private final int[] M = new int[MEM_SIZE];
+    final int[] M = new int[MEM_SIZE];
 
     public Memory() {
         Arrays.fill(M, 0);
     }
 
     public final void tick() {
-        if (microtick == MEM_SIZE) microtick = 0;
+        if (microtick == MEM_SIZE) {
+            microtick = 0;
+        }
         out = M[microtick];
         M[(microtick + MEM_SIZE) % MEM_SIZE] = in;
         microtick++;

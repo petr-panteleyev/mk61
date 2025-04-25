@@ -4,6 +4,7 @@
  */
 package org.panteleyev.mk61.core;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MCU {
@@ -23,7 +24,7 @@ public class MCU {
     final AtomicInteger keyb_y = new AtomicInteger(0);
 
     int S, S1, L, T, P, microtick, mcmd, comma, in, out, AMK, ASP, AK, MOD;
-    final boolean[] ind_comma = new boolean[14];
+    final boolean[] ind_comma = new boolean[IND_COMMA_SIZE];
     boolean redraw_indic;
 
     private static final int[] J = {
@@ -42,17 +43,9 @@ public class MCU {
         this.synchro_rom = synchro_rom;
         this.ik130x = ik130x;
 
-//        R = new int[ARRAY_SIZE];
-//        M = new int[ARRAY_SIZE];
-//        ST = new int[ARRAY_SIZE];
-//
- //        ind_comma = new boolean[14];
-
-        for (int ix = 0; ix < ARRAY_SIZE; ix++) {
-            R[ix] = 0;
-            M[ix] = 0;
-            ST[ix] = 0;
-        }
+        Arrays.fill(R, 0);
+        Arrays.fill(M, 0);
+        Arrays.fill(ST, 0);
 
         S = 0;
         S1 = 0;
@@ -61,8 +54,6 @@ public class MCU {
         P = 0;
         microtick = 0;
         mcmd = 0;
-//        keyb_x = 0;
-//        keyb_y = 0;
         comma = 0;
         in = 0;
         out = 0;
@@ -72,9 +63,7 @@ public class MCU {
         MOD = 0;
         redraw_indic = false;
 
-        for (int ix = 0; ix < IND_COMMA_SIZE; ix++) {
-            ind_comma[ix] = false;
-        }
+        Arrays.fill(ind_comma, false);
     }
 
     public void tick() {

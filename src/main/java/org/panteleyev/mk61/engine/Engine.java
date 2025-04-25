@@ -6,14 +6,12 @@ package org.panteleyev.mk61.engine;
 
 import org.panteleyev.mk61.core.AngleMode;
 import org.panteleyev.mk61.core.Emulator;
-import org.panteleyev.mk61.util.ThreadUtil;
+import org.panteleyev.mk61.core.Mk61DeviceModel;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.panteleyev.mk61.engine.Constants.DISPLAY_DELAY;
 
 public class Engine {
     private static class ExecutionThread extends Thread {
@@ -29,10 +27,14 @@ public class Engine {
     private final AtomicReference<Emulator> emulator = new AtomicReference<>(null);
 
     private final Executor mk61Executor = Executors.newSingleThreadExecutor(ExecutionThread::new);
-    private final IndicatorCallback indicatorCallback;
 
-    public Engine(IndicatorCallback indicatorCallback) {
-        this.indicatorCallback = indicatorCallback;
+    private final Mk61DeviceModel deviceModel = new Mk61DeviceModel();
+
+    public Engine() {
+    }
+
+    public Mk61DeviceModel deviceModel() {
+        return deviceModel;
     }
 
     public void powerOn() {
@@ -41,10 +43,8 @@ public class Engine {
             return;
         }
 
-        var e = new Emulator(angleMode, ir -> {
-            indicatorCallback.display(ir);
-            ThreadUtil.sleep(DISPLAY_DELAY);
-        });
+        deviceModel.powerOn();
+        var e = new Emulator(angleMode, deviceModel);
 
         emulator.set(e);
         mk61Executor.execute(e);
@@ -57,7 +57,6 @@ public class Engine {
 
         emulator.get().stopEmulator(true);
         emulator.set(null);
-        indicatorCallback.display(IR.EMPTY);
     }
 
     public void processButton(KeyboardButton button) {

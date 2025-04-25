@@ -89,8 +89,8 @@
 
 .buttonGrid {
     -fx-background-color: #3a3a38;
-    -fx-hgap: 10;
-    -fx-vgap: 10;
+    -fx-hgap: 12;
+    -fx-vgap: 12;
     -fx-padding: 20 20 20 20;
 }
 
@@ -120,7 +120,7 @@
     -fx-background-color: #363942;
     -fx-background-radius: 5;
     -fx-background-insets: 0;
-    -fx-padding: 10 10 10 10;
+    -fx-padding: 15 15 15 15;
 }
 
 .root {
@@ -128,7 +128,7 @@
 }
 
 .titleLabel {
-    -fx-font-size: large;
+    -fx-font-size: 20px;
     -fx-text-fill: white;
     -fx-font-weight: bolder;
     -fx-background-color: #48474c;

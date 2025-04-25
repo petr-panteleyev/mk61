@@ -19,6 +19,7 @@ import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javafx.application.Platform.runLater;
 import static org.panteleyev.mk61.ApplicationFiles.files;
+import static org.panteleyev.mk61.settings.Settings.settings;
 
 public class Mk61Application extends Application {
     private static final Logger LOGGER = Logger.getLogger(Mk61Application.class.getName());
@@ -39,6 +40,7 @@ public class Mk61Application extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         files().initialize();
+        settings().load();
 
         Font.loadFont(
                 Mk61Application.class.getResource("/fonts/neat-lcd.ttf").toString(),
