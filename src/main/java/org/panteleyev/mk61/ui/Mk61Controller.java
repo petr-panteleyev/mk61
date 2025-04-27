@@ -5,7 +5,6 @@
 package org.panteleyev.mk61.ui;
 
 import javafx.animation.AnimationTimer;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -15,13 +14,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -309,7 +301,8 @@ public class Mk61Controller extends BaseController {
                 ),
                 gridRow(label(""), aLabel, bLabel, cLabel, dLabel)
         ));
-        grid.getColumnConstraints().addAll(columnConstraints, columnConstraints, columnConstraints, columnConstraints, columnConstraints);
+        grid.getColumnConstraints().addAll(columnConstraints, columnConstraints, columnConstraints, columnConstraints,
+                columnConstraints);
 
         grid.getStyleClass().add("buttonGrid");
         GridPane.setHalignment(aLabel, HPos.CENTER);
