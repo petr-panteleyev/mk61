@@ -4,25 +4,27 @@
  */
 package org.panteleyev.mk61.core;
 
+import org.panteleyev.mk61.engine.Indicator;
+import org.panteleyev.mk61.engine.Mk61DeviceModel;
 import org.panteleyev.mk61.engine.Register;
-import org.panteleyev.mk61.util.ThreadUtil;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.panteleyev.mk61.core.MCommands.ik1302_mrom;
-import static org.panteleyev.mk61.core.MCommands.ik1303_mrom;
-import static org.panteleyev.mk61.core.MCommands.ik1306_mrom;
-import static org.panteleyev.mk61.core.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
-import static org.panteleyev.mk61.core.Synchro.ik1302_srom;
-import static org.panteleyev.mk61.core.Synchro.ik1303_srom;
-import static org.panteleyev.mk61.core.Synchro.ik1306_srom;
-import static org.panteleyev.mk61.core.UCommands.ik1302_urom;
-import static org.panteleyev.mk61.core.UCommands.ik1303_urom;
-import static org.panteleyev.mk61.core.UCommands.ik1306_urom;
+import static org.panteleyev.mk61.core.MCommands.IK1302_MROM;
+import static org.panteleyev.mk61.core.MCommands.IK1303_MROM;
+import static org.panteleyev.mk61.core.MCommands.IK1306_MROM;
+import static org.panteleyev.mk61.engine.Constants.DISPLAY_DELAY;
+import static org.panteleyev.mk61.engine.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
+import static org.panteleyev.mk61.core.Synchro.IK1302_SROM;
+import static org.panteleyev.mk61.core.Synchro.IK1303_SROM;
+import static org.panteleyev.mk61.core.Synchro.IK1306_SROM;
+import static org.panteleyev.mk61.core.UCommands.IK1302_UROM;
+import static org.panteleyev.mk61.core.UCommands.IK1303_UROM;
+import static org.panteleyev.mk61.core.UCommands.IK1306_UROM;
 
-public class Emulator implements Runnable {
+public final class Emulator extends Thread {
     private static final int REG_2_OFFSET = 0;
     private static final int REG_3_OFFSET = REG_2_OFFSET + 42;
     private static final int REG_A_OFFSET = 0;
@@ -49,66 +51,35 @@ public class Emulator implements Runnable {
             {2, 167}, {2, 209}, {2, 251}, {3, 41}, {4, 41}, {5, 41}
     };
 
-    enum RunningState {
-        RUNNING(0), STOPPED(1), STOPPING_NORMAL(2), STOPPING_FORCED(3);
-
-        RunningState(int state) {
-            this.state = state;
-        }
-
-        private final int state;
-    }
-
-    private final MCU IK1302 = new MCU(ik1302_urom, ik1302_mrom, ik1302_srom, 2);
-    private final MCU IK1303 = new MCU(ik1303_urom, ik1303_mrom, ik1303_srom, 3);
-    private final MCU IK1306 = new MCU(ik1306_urom, ik1306_mrom, ik1306_srom, 6);
+    private final MCU IK1302 = new MCU(IK1302_UROM, IK1302_MROM, IK1302_SROM, 2);
+    private final MCU IK1303 = new MCU(IK1303_UROM, IK1303_MROM, IK1303_SROM, 3);
+    private final MCU IK1306 = new MCU(IK1306_UROM, IK1306_MROM, IK1306_SROM, 6);
 
     private final Memory IR2_1 = new Memory();
     private final Memory IR2_2 = new Memory();
 
-    private final AtomicInteger angleMode;
     private final AtomicInteger speedMode = new AtomicInteger(1);  // 0=fast, 1=real speed
 
     private int syncCounter = 0;
     private final int[] indicator = new int[12];
-    private final int[] indicator_old = new int[12];
-    private final boolean[] ind_comma = new boolean[12];
-    private final boolean[] ind_comma_old = new boolean[12];
-
-    private final AtomicInteger runningState = new AtomicInteger(RunningState.STOPPED.state);
+    private final int[] indicatorOld = new int[12];
+    private final boolean[] indComma = new boolean[12];
+    private final boolean[] indCommaOld = new boolean[12];
 
     private final Mk61DeviceModel deviceModel;
 
-    public Emulator(AtomicInteger angleMode, Mk61DeviceModel deviceModel) {
-        this.angleMode = angleMode;
+    public Emulator(Mk61DeviceModel deviceModel) {
         this.deviceModel = deviceModel;
+        setDaemon(true);
+        setName("Emulator");
     }
 
     public void run() {
-        runningState.set(RunningState.RUNNING.state);
-        while (runningState.get() == RunningState.RUNNING.state) {
-            step();
-        }
-
-        if (runningState.get() != RunningState.STOPPING_FORCED.state) {
-            while (!(IR2_1.microtick == 84 && syncCounter == 0)) {
-                tick42();
+        try {
+            while (!isInterrupted()) {
+                step();
             }
-        }
-
-        runningState.set(RunningState.STOPPED.state);
-    }
-
-    public void stopEmulator(boolean force) {
-        if (force) {
-            runningState.set(RunningState.STOPPING_FORCED.state);
-        } else {
-            runningState.set(RunningState.STOPPING_NORMAL.state);
-        }
-
-        while (runningState.get() == RunningState.STOPPING_NORMAL.state
-                || runningState.get() == RunningState.STOPPING_FORCED.state) {
-            ThreadUtil.sleep(Duration.ofMillis(10));
+        } catch (InterruptedException _) {
         }
     }
 
@@ -135,7 +106,7 @@ public class Emulator implements Runnable {
     	*/
     }
 
-    void show_indicator() {
+    void show_indicator() throws InterruptedException {
         long ir = 0;
         int dots = 0;
 
@@ -143,7 +114,7 @@ public class Emulator implements Runnable {
 
         for (int ix = 0; ix < 12; ix++) {
             ir |= (long) (indicator[ix] & 0xF) << shift;
-            if (ind_comma[ix]) {
+            if (indComma[ix]) {
                 dots |= 1 << ix;
             }
             shift += 4;
@@ -151,7 +122,9 @@ public class Emulator implements Runnable {
 
         deviceModel.setIndicator(ir, dots);
         // Задержка нужна, чтобы мигание экрана было более или менее заметно.
-        ThreadUtil.sleep(Duration.ofMillis(10));
+        if (ir != Indicator.EMPTY.indicator()) {
+            Thread.sleep(DISPLAY_DELAY);
+        }
     }
 
     void tick() {
@@ -177,7 +150,7 @@ public class Emulator implements Runnable {
 
         if (IR2_1.microtick == 84) {
             syncCounter = (syncCounter + 1) % 5;
-            if (IK1302.redraw_indic && syncCounter == 4) {
+            if (IK1302.redrawIndic && syncCounter == 4) {
                 if (deviceModel.getMemoryUploadFlag()) {
                     loadMemory(deviceModel.getMemoryUpload());
                 }
@@ -189,34 +162,40 @@ public class Emulator implements Runnable {
         return false;
     }
 
-    void step() {
+    void step() throws InterruptedException {
         int i, idx;
         IK1303.keyb_y.set(1);
-        IK1303.keyb_x.set(angleMode.get());
+        IK1303.keyb_x.set(deviceModel.getAngleMode());
         for (int ix = 0; ix < 560; ix++) {
-            if (runningState.get() == RunningState.STOPPING_FORCED.state) break;
+            if (isInterrupted()) {
+                break;
+            }
             if (speedMode.get() > 0) {
-                ThreadUtil.sleep(Duration.ofMillis(1));
+                Thread.sleep(Duration.ofMillis(1));
             }
             tick42();
 
-            if (IK1302.redraw_indic) {
+            if (IK1302.redrawIndic) {
                 for (i = 0; i <= 8; i++) indicator[i] = IK1302.R[(8 - i) * 3];
                 for (i = 0; i <= 2; i++) indicator[i + 9] = IK1302.R[(11 - i) * 3];
-                for (i = 0; i <= 8; i++) ind_comma[i] = IK1302.ind_comma[9 - i];
-                for (i = 0; i <= 2; i++) ind_comma[i + 9] = IK1302.ind_comma[12 - i];
-                IK1302.redraw_indic = false;
+                for (i = 0; i <= 8; i++) indComma[i] = IK1302.ind_comma[9 - i];
+                for (i = 0; i <= 2; i++) indComma[i + 9] = IK1302.ind_comma[12 - i];
+                IK1302.redrawIndic = false;
             } else {
                 Arrays.fill(indicator, 0xF);
-                Arrays.fill(ind_comma, false);
+                Arrays.fill(indComma, false);
             }
 
             var renew = false;
             for (idx = 0; idx < 12; idx++) {
-                if (indicator_old[idx] != indicator[idx]) renew = true;
-                indicator_old[idx] = indicator[idx];
-                if (ind_comma_old[idx] != ind_comma[idx]) renew = true;
-                ind_comma_old[idx] = ind_comma[idx];
+                if (indicatorOld[idx] != indicator[idx]) {
+                    renew = true;
+                    indicatorOld[idx] = indicator[idx];
+                }
+                if (indCommaOld[idx] != indComma[idx]) {
+                    renew = true;
+                    indCommaOld[idx] = indComma[idx];
+                }
             }
             if (renew) {
                 deviceModel.setPc(getProgramCounter());

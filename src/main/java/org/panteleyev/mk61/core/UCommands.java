@@ -4,8 +4,8 @@
  */
 package org.panteleyev.mk61.core;
 
-class UCommands {
-    public static final int[] ik1302_urom = {
+final class UCommands {
+    public static final int[] IK1302_UROM = {
             0x0000000,
             0x0800001,
             0x0A00820,
@@ -76,7 +76,7 @@ class UCommands {
             0x0800001
     };
 
-    public static final int[] ik1303_urom = {
+    public static final int[] IK1303_UROM = {
             0x0000000,
             0x0800001,
             0x0040020,
@@ -147,7 +147,7 @@ class UCommands {
             0x1000180
     };
 
-    public static final int[] ik1306_urom = {
+    public static final int[] IK1306_UROM = {
             0x0000000,
             0x0800008,
             0x0040020,

@@ -4,8 +4,8 @@
  */
 package org.panteleyev.mk61.core;
 
-class MCommands {
-    public static final int[] ik1302_mrom = {
+final class MCommands {
+    public static final int[] IK1302_MROM = {
             //0x00
             0x00204E4E, 0x00117360, 0x00114840, 0x01040240,
             0x00164040, 0x001B3240, 0x00064640, 0x015B4013,
@@ -76,7 +76,7 @@ class MCommands {
             0x00144740, 0x01176806, 0x000A5A5A, 0x01D3200D
     };
 
-    public static final int[] ik1303_mrom = {
+    public static final int[] IK1303_MROM = {
             0x00386050,
             0x005B3F3E,
             0x000F5970,
@@ -335,7 +335,7 @@ class MCommands {
             0x00174D50
     };
 
-    public static final int[] ik1306_mrom = {
+    public static final int[] IK1306_MROM = {
             0x0070000, // 00.
             0x0060040, // 01.
             0x0076A2F, // 02.

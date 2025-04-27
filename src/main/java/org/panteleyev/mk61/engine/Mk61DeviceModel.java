@@ -1,10 +1,8 @@
 /*
  Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
- SPDX-License-Identifier: BSD-2-Clause
+ SPDX-License-Identifier: GPL-3.0-only
  */
-package org.panteleyev.mk61.core;
-
-import org.panteleyev.mk61.engine.Indicator;
+package org.panteleyev.mk61.engine;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,7 +10,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-public class Mk61DeviceModel {
+public final class Mk61DeviceModel {
     public static final int PROGRAM_MEMORY_SIZE = 105;
     public static final int REGISTERS_SIZE = 15;
     public static final int CALL_STACK_SIZE = 5;
@@ -37,6 +35,8 @@ public class Mk61DeviceModel {
 
     private final AtomicIntegerArray memoryUpload = new AtomicIntegerArray(PROGRAM_MEMORY_SIZE);
     private final AtomicBoolean memoryUploadFlag = new AtomicBoolean(false);
+
+    private final AtomicInteger angleMode = new AtomicInteger(AngleMode.RADIAN.mode());
 
     public void powerOn() {
         pc.set(0);
@@ -130,6 +130,14 @@ public class Mk61DeviceModel {
 
     public boolean getExecutionFlag() {
         return executionFlag.get();
+    }
+
+    public void setAngleMode(AngleMode mode) {
+        angleMode.set(mode.mode());
+    }
+
+    public int getAngleMode() {
+        return angleMode.get();
     }
 
     public void setMemory(int[] array) {

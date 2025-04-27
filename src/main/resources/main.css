@@ -1,11 +1,12 @@
 .keyPadButton {
-    -fx-font-size: 26px;
+    -fx-font-size: xx-large;
     -fx-text-fill: black;
     -fx-text-alignment: center;
     -fx-font-weight: bolder;
     -fx-background-radius: 7;
     -fx-background-insets: 0;
     -fx-font-family: 'JetBrains Mono';
+    -fx-padding: 10 9 10 9;
 }
 
 .fButton {
@@ -54,7 +55,7 @@
 }
 
 .fLabel {
-    -fx-font-size: 16px;
+    -fx-font-size: large;
     -fx-text-fill: yellow;
     -fx-font-weight: bold;
     -fx-font-family: 'JetBrains Mono';
@@ -62,11 +63,11 @@
 }
 
 .kLabel {
-    -fx-font-size: 16px;
+    -fx-font-size: large;
     -fx-text-fill: lightblue;
     -fx-font-weight: bold;
     -fx-font-family: 'JetBrains Mono';
-    -fx-padding: 0 0 5 0;
+    -fx-padding: 0 -5 5 -5;
 }
 
 .buttonGrid {
@@ -85,20 +86,20 @@
 
 .lcd {
     -fx-font-weight: normal;
-    -fx-font-size: 36px;
+    -fx-font-size: 30px;
     -fx-text-fill: lightgreen;
     -fx-font-family: 'Neat LCD';
 }
 
 .dotLcd {
     -fx-font-weight: normal;
-    -fx-font-size: 18px;
+    -fx-font-size: 15px;
     -fx-text-fill: lightgreen;
     -fx-font-family: 'Neat LCD';
 }
 
 .switchPanel {
-    -fx-font-size: large;
+    -fx-font-size: small;
     -fx-background-color: #363942;
     -fx-background-radius: 5;
     -fx-background-insets: 0;
@@ -110,7 +111,7 @@
 }
 
 .titleLabel {
-    -fx-font-size: xx-large;
+    -fx-font-size: x-large;
     -fx-text-fill: white;
     -fx-font-weight: bolder;
     -fx-background-color: #48474c;
@@ -129,13 +130,13 @@
 
 .registerLabel {
     -fx-font-weight: bolder;
-    -fx-font-size: large;
+    -fx-font-size: medium;
     -fx-text-fill: white;
 }
 
 .registerELabel {
     -fx-font-weight: bolder;
-    -fx-font-size: large;
+    -fx-font-size: medium;
     -fx-text-fill: white;
     -fx-padding: 20 0 0 -5;
 }

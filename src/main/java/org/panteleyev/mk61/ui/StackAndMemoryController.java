@@ -9,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import org.panteleyev.mk61.core.Mk61DeviceModel;
+import org.panteleyev.mk61.engine.Mk61DeviceModel;
 import org.panteleyev.mk61.engine.Register;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import static org.panteleyev.fx.MenuFactory.menuBar;
 import static org.panteleyev.fx.MenuFactory.menuItem;
 import static org.panteleyev.fx.grid.GridBuilder.gridPane;
 import static org.panteleyev.fx.grid.GridRowBuilder.gridRow;
-import static org.panteleyev.mk61.core.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
+import static org.panteleyev.mk61.engine.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.engine.Constants.CALL_STACK_SIZE;
 import static org.panteleyev.mk61.engine.Constants.REGISTERS_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;

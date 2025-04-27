@@ -1,8 +1,8 @@
 /*
  Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
- SPDX-License-Identifier: BSD-2-Clause
+ SPDX-License-Identifier: GPL-3.0-only
  */
-package org.panteleyev.mk61.core;
+package org.panteleyev.mk61.engine;
 
 public enum AngleMode {
     RADIAN(10),

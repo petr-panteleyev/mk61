@@ -7,6 +7,7 @@ package org.panteleyev.mk61.core;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.panteleyev.mk61.engine.Mk61DeviceModel;
 
 import java.util.List;
 

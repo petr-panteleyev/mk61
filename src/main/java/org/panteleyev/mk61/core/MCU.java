@@ -7,7 +7,7 @@ package org.panteleyev.mk61.core;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MCU {
+public final class MCU {
     private static final int ARRAY_SIZE = 42;
     private static final int IND_COMMA_SIZE = 14;
 
@@ -25,7 +25,7 @@ public class MCU {
 
     int S, S1, L, T, P, microtick, mcmd, comma, in, out, AMK, ASP, AK, MOD;
     final boolean[] ind_comma = new boolean[IND_COMMA_SIZE];
-    boolean redraw_indic;
+    boolean redrawIndic;
 
     private static final int[] J = {
             0, 1, 2, 3, 4, 5,
@@ -61,7 +61,7 @@ public class MCU {
         ASP = 0;
         AK = 0;
         MOD = 0;
-        redraw_indic = false;
+        redrawIndic = false;
 
         Arrays.fill(ind_comma, false);
     }
@@ -70,17 +70,19 @@ public class MCU {
         int tick_0123 = microtick & 3;
         int chetv_1248 = 1 << tick_0123;
         int signal_I = microtick >>> 2;
-        int signal_D = microtick / 12 | 0;
+        int signal_D = microtick / 12;
         //int signal_E = (microtick >>> 2) % 3;
         boolean keyb_processed = false;
 
         if (microtick == 0) {
             AK = R[36] + 16 * R[39];
-            if ((cmd_rom[AK] & 0xfc0000) == 0) T = 0;
+            if ((cmd_rom[AK] & 0xfc0000) == 0) {
+                T = 0;
+            }
         }
 
         if (chetv_1248 == 1) {
-            int k = microtick / 36 | 0;
+            int k = microtick / 36;
             if (k < 3) ASP = 0xff & cmd_rom[AK];
             else if (k == 3) ASP = 0xff & cmd_rom[AK] >>> 8;
             else if (k == 4) {
@@ -98,7 +100,9 @@ public class MCU {
             AMK = AMK & 0x3f;
             if (AMK > 59) {
                 AMK = (AMK - 60) * 2;
-                if (L == 0) AMK++;
+                if (L == 0) {
+                    AMK++;
+                }
                 AMK += 60;
             }
             mcmd = ucmd_rom[AMK];
@@ -109,44 +113,83 @@ public class MCU {
         switch (mcmd >>> 24 & 3) {
             case 2:
             case 3:
-                if ((microtick / 12 | 0) != keyb_x.get() - 1)
+                if ((microtick / 12) != keyb_x.get() - 1) {
                     if (keyb_y.get() > 0) {
                         if (chetv_1248 == 1) S1 |= keyb_y.get();
                         keyb_processed = true;
                     }
+                }
                 break;
         }
 
-        if ((mcmd & 1) > 0) alpha |= R[signal_I];
-        if ((mcmd & 2) > 0) alpha |= M[signal_I];
-        if ((mcmd & 4) > 0) alpha |= ST[signal_I];
-        if ((mcmd & 8) > 0) alpha |= ~R[signal_I] & 0xf;
-        if ((mcmd & 16) > 0) if (L == 0) alpha |= 0xa;
-        if ((mcmd & 32) > 0) alpha |= S;
-        if ((mcmd & 64) > 0) alpha |= 4;
-        if ((mcmd >>> 7 & 16) > 0) beta |= 1;
-        if ((mcmd >>> 7 & 8) > 0) beta |= 6;
-        if ((mcmd >>> 7 & 4) > 0) beta |= S1;
-        if ((mcmd >>> 7 & 2) > 0) beta |= ~S & 0xf;
-        if ((mcmd >>> 7 & 1) > 0) beta |= S;
+        if ((mcmd & 1) > 0) {
+            alpha |= R[signal_I];
+        }
+        if ((mcmd & 2) > 0) {
+            alpha |= M[signal_I];
+        }
+        if ((mcmd & 4) > 0) {
+            alpha |= ST[signal_I];
+        }
+        if ((mcmd & 8) > 0) {
+            alpha |= ~R[signal_I] & 0xF;
+        }
+        if ((mcmd & 16) > 0) {
+            if (L == 0) {
+                alpha |= 0xA;
+            }
+        }
+        if ((mcmd & 32) > 0) {
+            alpha |= S;
+        }
+        if ((mcmd & 64) > 0) {
+            alpha |= 4;
+        }
+        if ((mcmd >>> 7 & 16) > 0) {
+            beta |= 1;
+        }
+        if ((mcmd >>> 7 & 8) > 0) {
+            beta |= 6;
+        }
+        if ((mcmd >>> 7 & 4) > 0) {
+            beta |= S1;
+        }
+        if ((mcmd >>> 7 & 2) > 0) {
+            beta |= ~S & 0xF;
+        }
+        if ((mcmd >>> 7 & 1) > 0) {
+            beta |= S;
+        }
         if ((cmd_rom[AK] & 0xfc0000) > 0) {
-            if (keyb_y.get() == 0) T = 0;
+            if (keyb_y.get() == 0) {
+                T = 0;
+            }
         } else {
-            redraw_indic = true;
-            if ((microtick / 12 | 0) == keyb_x.get() - 1)
+            redrawIndic = true;
+            if ((microtick / 12) == keyb_x.get() - 1)
                 if (keyb_y.get() > 0) {
                     S1 = keyb_y.get();
                     T = 1;
                     keyb_processed = true;
                 }
-            if (tick_0123 == 0)
-                if (signal_D >= 0 && signal_D < 12)
-                    if (L > 0) comma = signal_D;
+            if (tick_0123 == 0) {
+                if (signal_D >= 0 && signal_D < 12) {
+                    if (L > 0) {
+                        comma = signal_D;
+                    }
+                }
+            }
             ind_comma[signal_D] = L > 0;
         }
-        if ((mcmd >>> 12 & 4) > 0) gamma = ~T & 1;
-        if ((mcmd >>> 12 & 2) > 0) gamma |= ~L & 1;
-        if ((mcmd >>> 12 & 1) > 0) gamma |= L & 1;
+        if ((mcmd >>> 12 & 4) > 0) {
+            gamma = ~T & 1;
+        }
+        if ((mcmd >>> 12 & 2) > 0) {
+            gamma |= ~L & 1;
+        }
+        if ((mcmd >>> 12 & 1) > 0) {
+            gamma |= L & 1;
+        }
 
         int sum = alpha + beta + gamma;
         int sigma = sum & 0xf;
@@ -176,11 +219,19 @@ public class MCU {
                     R[signal_I] = R[signal_I] | sigma;
                     break;
             }
-            if ((mcmd >>> 18 & 1) > 0) R[(signal_I + 41) % ARRAY_SIZE] = sigma;
-            if ((mcmd >>> 19 & 1) > 0) R[(signal_I + 40) % ARRAY_SIZE] = sigma;
+            if ((mcmd >>> 18 & 1) > 0) {
+                R[(signal_I + 41) % ARRAY_SIZE] = sigma;
+            }
+            if ((mcmd >>> 19 & 1) > 0) {
+                R[(signal_I + 40) % ARRAY_SIZE] = sigma;
+            }
         }
-        if ((mcmd >>> 21 & 1) > 0) L = 1 & P;
-        if ((mcmd >>> 20 & 1) > 0) M[signal_I] = S;
+        if ((mcmd >>> 21 & 1) > 0) {
+            L = 1 & P;
+        }
+        if ((mcmd >>> 20 & 1) > 0) {
+            M[signal_I] = S;
+        }
 
         switch (mcmd >>> 22 & 3) {
             case 1:
@@ -221,7 +272,7 @@ public class MCU {
                 x = ST[signal_I];
                 y = ST[(signal_I + 1) % ARRAY_SIZE];
                 z = ST[(signal_I + 2) % ARRAY_SIZE];
-                ST[(signal_I + 0) % ARRAY_SIZE] = sigma | y;
+                ST[(signal_I) % ARRAY_SIZE] = sigma | y;
                 ST[(signal_I + 1) % ARRAY_SIZE] = x | z;
                 ST[(signal_I + 2) % ARRAY_SIZE] = y | x;
                 break;
@@ -230,7 +281,9 @@ public class MCU {
         out = 0xf & M[signal_I];
         M[signal_I] = in;
         microtick += 4;
-        if (microtick > 167) microtick = 0;
+        if (microtick > 167) {
+            microtick = 0;
+        }
 
         if (keyb_processed && ik130x != 3) {
             keyb_x.set(0);

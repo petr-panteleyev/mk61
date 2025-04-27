@@ -25,7 +25,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.controlsfx.control.SegmentedButton;
 import org.panteleyev.fx.WindowManager;
-import org.panteleyev.mk61.core.AngleMode;
+import org.panteleyev.mk61.engine.AngleMode;
 import org.panteleyev.mk61.engine.Engine;
 import org.panteleyev.mk61.engine.Indicator;
 import org.panteleyev.mk61.engine.KeyboardButton;
@@ -47,7 +47,7 @@ import static org.panteleyev.fx.MenuFactory.menuItem;
 import static org.panteleyev.fx.dialogs.FileChooserBuilder.fileChooser;
 import static org.panteleyev.fx.grid.GridBuilder.gridPane;
 import static org.panteleyev.fx.grid.GridRowBuilder.gridRow;
-import static org.panteleyev.mk61.core.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
+import static org.panteleyev.mk61.engine.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;
 import static org.panteleyev.mk61.ui.Accelerators.SHORTCUT_1;
 
@@ -92,7 +92,7 @@ public class Mk61Controller extends BaseController {
 
     public Mk61Controller(Stage stage) {
         super(stage);
-//        stage.setResizable(false);
+        stage.setResizable(false);
         stage.getIcons().add(Picture.ICON.getImage());
         root.getStyleClass().add("root");
 
@@ -192,13 +192,13 @@ public class Mk61Controller extends BaseController {
         var powerSwitch = new SegmentedButton(offButton, onButton);
 
         var radianButton = new ToggleButton("Р");
-        radianButton.setOnAction(_ -> engine.setAngleMode(AngleMode.RADIAN));
+        radianButton.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.RADIAN));
         radianButton.setFocusTraversable(false);
         var gRadianButton = new ToggleButton("ГРД");
-        gRadianButton.setOnAction(_ -> engine.setAngleMode(AngleMode.GRAD));
+        gRadianButton.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.GRAD));
         gRadianButton.setFocusTraversable(false);
         var degreeButton = new ToggleButton("Г");
-        degreeButton.setOnAction(_ -> engine.setAngleMode(AngleMode.DEGREE));
+        degreeButton.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.DEGREE));
         degreeButton.setFocusTraversable(false);
         var trigonometricSwitch = new SegmentedButton(radianButton, gRadianButton, degreeButton);
         radianButton.fire();
@@ -291,7 +291,7 @@ public class Mk61Controller extends BaseController {
                 gridRow(
                         new ButtonNode("0", "10ˣ", "НОП", "grayButton", KeyboardButton.D0,
                                 keyboardButtonConsumer),
-                        new ButtonNode(".", "Ѻ", "⋀", "grayButton", KeyboardButton.DOT, keyboardButtonConsumer),
+                        new ButtonNode("∙", "Ѻ", "⋀", "grayButton", KeyboardButton.DOT, keyboardButtonConsumer),
                         new ButtonNode("/-/", "АВТ", "⋁", "grayButton", KeyboardButton.SIGN,
                                 keyboardButtonConsumer),
                         new ButtonNode("ВП", "ПРГ", "⨁", "grayButton", KeyboardButton.EE,

@@ -26,7 +26,7 @@ public class ButtonNode extends VBox {
 
         if (!fText.isEmpty() || !kText.isEmpty()) {
             int col = 0;
-            var upperBox = new GridPane(5, 5);
+            var upperBox = new GridPane(0, 0);
             var column = new ColumnConstraints();
             column.setPercentWidth(50);
 
