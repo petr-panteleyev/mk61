@@ -5,15 +5,25 @@
 package org.panteleyev.mk61.ui;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -90,7 +100,7 @@ public class Mk61Controller extends BaseController {
 
     public Mk61Controller(Stage stage) {
         super(stage);
-        stage.setResizable(false);
+//        stage.setResizable(false);
         stage.getIcons().add(Picture.ICON.getImage());
         root.getStyleClass().add("root");
 
@@ -215,85 +225,91 @@ public class Mk61Controller extends BaseController {
         return pane;
     }
 
-    private GridPane createKeyboardGrid() {
+    private Node createKeyboardGrid() {
         var aLabel = new RegisterLabel("a");
         var bLabel = new RegisterLabel("b");
         var cLabel = new RegisterLabel("c");
         var dLabel = new RegisterLabel("d");
         var eLabel = new RegisterLabel("e");
+        eLabel.getStyleClass().add("registerELabel");
+
+        var columnConstraints = new ColumnConstraints();
+        columnConstraints.setPercentWidth(20);
 
         var grid = gridPane(List.of(
                 gridRow(
-                        new ButtonNode("F", "", "", "fButton", KeyboardButton.F, keyboardButtonConsumer).node(),
-                        new ButtonNode("ШГ>", "x<0", "", "blackButton", KeyboardButton.STEP_RIGHT,
-                                keyboardButtonConsumer).node(),
-                        new ButtonNode("<ШГ", "x=0", "", "blackButton", KeyboardButton.STEP_LEFT,
-                                keyboardButtonConsumer).node(),
+                        new ButtonNode("F", "", "", "fButton", KeyboardButton.F, keyboardButtonConsumer),
+                        new ButtonNode("ШГ→", "x<0", "", "blackButton", KeyboardButton.STEP_RIGHT,
+                                keyboardButtonConsumer),
+                        new ButtonNode("←ШГ", "x=0", "", "blackButton", KeyboardButton.STEP_LEFT,
+                                keyboardButtonConsumer),
                         new ButtonNode("В/О", "x≥0", "", "blackButton", KeyboardButton.RETURN,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("С/П", "x≠0", "", "blackButton", KeyboardButton.RUN_STOP,
-                                keyboardButtonConsumer).node()
+                                keyboardButtonConsumer)
                 ),
                 gridRow(
-                        new ButtonNode("K", "", "", "kButton", KeyboardButton.K, keyboardButtonConsumer).node(),
+                        new ButtonNode("K", "", "", "kButton", KeyboardButton.K, keyboardButtonConsumer),
                         new ButtonNode("П→x", "L0", "", "blackButton", KeyboardButton.LOAD,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("x→П", "L1", "", "blackButton", KeyboardButton.STORE,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("БП", "L2", "", "blackButton", KeyboardButton.GOTO,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("ПП", "L3", "", "blackButton", KeyboardButton.GOSUB,
-                                keyboardButtonConsumer).node()
+                                keyboardButtonConsumer)
                 ),
                 gridRow(
                         new ButtonNode("7", "sin", "[x]", "grayButton", KeyboardButton.D7,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("8", "cos", "{x}", "grayButton", KeyboardButton.D8,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("9", "tg", "max", "grayButton", KeyboardButton.D9,
-                                keyboardButtonConsumer).node(),
-                        new ButtonNode("➖", "√", "", "grayButton", KeyboardButton.MINUS, keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
+                        new ButtonNode("➖", "√¯", "", "grayButton", KeyboardButton.MINUS, keyboardButtonConsumer),
                         new ButtonNode("➗", "1/x", "", "grayButton", KeyboardButton.DIVISION,
-                                keyboardButtonConsumer).node()
+                                keyboardButtonConsumer)
                 ),
                 gridRow(
                         new ButtonNode("4", "sin⁻¹", "|x|", "grayButton", KeyboardButton.D4,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("5", "cos⁻¹", "ЗН", "grayButton", KeyboardButton.D5,
-                                keyboardButtonConsumer).node(),
-                        new ButtonNode("6", "tg⁻¹", "°←′", "grayButton", KeyboardButton.D6,
-                                keyboardButtonConsumer).node(),
-                        new ButtonNode("➕", "π", "°→′", "grayButton", KeyboardButton.PLUS,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
+                        new ButtonNode("6", "tg⁻¹", ".⃖,", "grayButton", KeyboardButton.D6,
+                                keyboardButtonConsumer),
+                        new ButtonNode("➕", "π", ".⃗,", "grayButton", KeyboardButton.PLUS,
+                                keyboardButtonConsumer),
                         new ButtonNode("✖", "x²", "", "grayButton", KeyboardButton.MULTIPLICATION,
-                                keyboardButtonConsumer).node()
+                                keyboardButtonConsumer)
                 ),
                 gridRow(
                         new ButtonNode("1", "eˣ", "", "grayButton", KeyboardButton.D1,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("2", "lg", "", "grayButton", KeyboardButton.D2,
-                                keyboardButtonConsumer).node(),
-                        new ButtonNode("3", "ln", "°←‴", "grayButton", KeyboardButton.D3,
-                                keyboardButtonConsumer).node(),
-                        new ButtonNode("←→", "xy", "°→‴", "grayButton", KeyboardButton.SWAP,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
+                        new ButtonNode("3", "ln", ".‚⃖„", "grayButton", KeyboardButton.D3,
+
+                                keyboardButtonConsumer),
+                        new ButtonNode("←→", "xʸ", "․‚⃗„", "grayButton", KeyboardButton.SWAP,
+                                keyboardButtonConsumer),
                         new ButtonNode("В↑", "Вх", "СЧ", "grayButton", KeyboardButton.PUSH,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         eLabel
                 ),
                 gridRow(
                         new ButtonNode("0", "10ˣ", "НОП", "grayButton", KeyboardButton.D0,
-                                keyboardButtonConsumer).node(),
-                        new ButtonNode(".", "⟳", "⋀", "grayButton", KeyboardButton.DOT, keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
+                        new ButtonNode(".", "Ѻ", "⋀", "grayButton", KeyboardButton.DOT, keyboardButtonConsumer),
                         new ButtonNode("/-/", "АВТ", "⋁", "grayButton", KeyboardButton.SIGN,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("ВП", "ПРГ", "⨁", "grayButton", KeyboardButton.EE,
-                                keyboardButtonConsumer).node(),
+                                keyboardButtonConsumer),
                         new ButtonNode("Cx", "CF", "ИНВ", "redButton", KeyboardButton.CLEAR_X,
-                                keyboardButtonConsumer).node()
+                                keyboardButtonConsumer)
                 ),
                 gridRow(label(""), aLabel, bLabel, cLabel, dLabel)
         ));
+        grid.getColumnConstraints().addAll(columnConstraints, columnConstraints, columnConstraints, columnConstraints, columnConstraints);
 
         grid.getStyleClass().add("buttonGrid");
         GridPane.setHalignment(aLabel, HPos.CENTER);
@@ -341,16 +357,7 @@ public class Mk61Controller extends BaseController {
         if (!stackAndMemoryController.isVisible()) {
             stackAndMemoryController.show();
         }
-//
-//
-//        if (event.getSource() instanceof CheckMenuItem menuItem) {
-//            if (menuItem.isSelected()) {
-//                toolBox.getChildren().addFirst(stackAndMemoryController);
-//            } else {
-//                toolBox.getChildren().remove(stackAndMemoryController);
-//            }
-//            getStage().sizeToScene();
-//        }
+        stackAndMemoryController.getStage().toFront();
     }
 
     private void onSaveMemoryDump() {

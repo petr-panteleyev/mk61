@@ -82,6 +82,7 @@ public class StackAndMemoryController extends BaseController {
         root.setCenter(center);
 
         setupWindow(root);
+        getStage().setResizable(false);
         settings().loadStagePosition(this);
     }
 

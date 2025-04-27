@@ -9,7 +9,7 @@
 
     <groupId>org.panteleyev</groupId>
     <artifactId>mk61</artifactId>
-    <version>0.0.2</version>
+    <version>25.4.1</version>
     <packaging>jar</packaging>
     <name>MK-61</name>
 
@@ -103,7 +103,7 @@
         <jlinkMavenPluginVersion>1.1.0</jlinkMavenPluginVersion>
         <jpackageMavenPluginVersion>1.6.6</jpackageMavenPluginVersion>
         <!-- Dependencies -->
-        <javaFxVersion>24</javaFxVersion>
+        <javaFxVersion>24.0.1</javaFxVersion>
         <controlsFxVersion>11.2.2</controlsFxVersion>
         <javaCommonsVersion>1.6.0</javaCommonsVersion>
         <javaFxHelpersVersion>1.21.0</javaFxHelpersVersion>
