@@ -1,7 +1,8 @@
 # МК-61
 
-![JDK](docs/java-24.png)
-[![License](docs/gpl-v3.png)](LICENSE)
+[![License](https://www.panteleyev.org/badges/license-gpl-3.svg)](LICENSE)
+[![JDK](https://www.panteleyev.org/badges/java-25.svg)](https://jdk.java.net/25/)
+[![JDK](https://www.panteleyev.org/badges/javafx-25.svg)](https://jdk.java.net/javafx25/)
 
 Эмулятор программируемого микрокалькулятора МК-61.
 

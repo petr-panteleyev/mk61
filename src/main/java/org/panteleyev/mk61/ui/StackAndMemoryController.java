@@ -1,5 +1,5 @@
 /*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
+ Copyright © 2025 Petr Panteleyev
  SPDX-License-Identifier: BSD-2-Clause
  */
 package org.panteleyev.mk61.ui;
@@ -9,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import org.panteleyev.mk61.engine.Mk61DeviceModel;
+import org.panteleyev.mk61.engine.DeviceModel;
 import org.panteleyev.mk61.engine.Register;
 
 import java.util.ArrayList;
@@ -23,9 +23,9 @@ import static org.panteleyev.fx.MenuFactory.menuBar;
 import static org.panteleyev.fx.MenuFactory.menuItem;
 import static org.panteleyev.fx.grid.GridBuilder.gridPane;
 import static org.panteleyev.fx.grid.GridRowBuilder.gridRow;
-import static org.panteleyev.mk61.engine.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
-import static org.panteleyev.mk61.engine.Constants.CALL_STACK_SIZE;
-import static org.panteleyev.mk61.engine.Constants.REGISTERS_SIZE;
+import static org.panteleyev.mk61.engine.DeviceModel.CALL_STACK_SIZE;
+import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
+import static org.panteleyev.mk61.engine.DeviceModel.REGISTERS_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;
 import static org.panteleyev.mk61.util.StringUtil.addrToString;
 import static org.panteleyev.mk61.util.StringUtil.padToDisplay;
@@ -232,7 +232,7 @@ public class StackAndMemoryController extends BaseController {
 
 
     public void showPc(int pc) {
-        var effectivePc = Mk61DeviceModel.getRealPc10(pc);
+        var effectivePc = DeviceModel.getRealPc10(pc);
 
         if (effectivePc == previousPc) {
             return;
@@ -253,23 +253,25 @@ public class StackAndMemoryController extends BaseController {
         }
     }
 
-    public void renderDeviceModel(Mk61DeviceModel deviceModel) {
+    public void renderDeviceModel(DeviceModel deviceModel) {
         xLabel.setText(padToDisplay(Register.toString(deviceModel.getX())));
         yLabel.setText(padToDisplay(Register.toString(deviceModel.getY())));
         zLabel.setText(padToDisplay(Register.toString(deviceModel.getZ())));
         tLabel.setText(padToDisplay(Register.toString(deviceModel.getT())));
         x1Label.setText(padToDisplay(Register.toString(deviceModel.getX1())));
 
+        var newRegisters = deviceModel.getRegisters();
         for (int i = 0; i < REGISTERS_SIZE; i++) {
-            var newValue = deviceModel.getRegister(i);
+            var newValue = newRegisters[i];
             if (registerValues[i] != newValue) {
                 registerValues[i] = newValue;
                 registers.get(i).setText(padToDisplay(Register.toString(newValue)));
             }
         }
 
+        var callStackValues = deviceModel.getCallStack();
         for (int i = 0; i < CALL_STACK_SIZE; i++) {
-            callStack.get(i).setText(pcToString(deviceModel.getCallStack(i)));
+            callStack.get(i).setText(pcToString(callStackValues[i]));
         }
 
         pcLabel.setText(pcToString(deviceModel.getPc()));

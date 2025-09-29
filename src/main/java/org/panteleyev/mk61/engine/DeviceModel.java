@@ -1,16 +1,15 @@
 /*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
- SPDX-License-Identifier: GPL-3.0-only
+ Copyright © 2025 Petr Panteleyev
+ SPDX-License-Identifier: BSD-2-Clause
  */
 package org.panteleyev.mk61.engine;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicLongArray;
 
-public final class Mk61DeviceModel {
+public final class DeviceModel {
     public static final int PROGRAM_MEMORY_SIZE = 105;
     public static final int REGISTERS_SIZE = 15;
     public static final int CALL_STACK_SIZE = 5;
@@ -26,14 +25,13 @@ public final class Mk61DeviceModel {
     private final AtomicLong z = new AtomicLong(0);
     private final AtomicLong t = new AtomicLong(0);
 
-    private final AtomicLongArray registers = new AtomicLongArray(REGISTERS_SIZE);
-    private final AtomicIntegerArray callStack = new AtomicIntegerArray(CALL_STACK_SIZE);
+    private final long[] registers = new long[REGISTERS_SIZE];
+    private final int[] callStack = new int[CALL_STACK_SIZE];
 
     private final AtomicBoolean executionFlag = new AtomicBoolean(false);
 
-    private final AtomicIntegerArray memory = new AtomicIntegerArray(PROGRAM_MEMORY_SIZE);
-
-    private final AtomicIntegerArray memoryUpload = new AtomicIntegerArray(PROGRAM_MEMORY_SIZE);
+    private final int[] memory = new int[PROGRAM_MEMORY_SIZE];
+    private final int[] memoryUpload = new int[PROGRAM_MEMORY_SIZE];
     private final AtomicBoolean memoryUploadFlag = new AtomicBoolean(false);
 
     private final AtomicInteger angleMode = new AtomicInteger(AngleMode.RADIAN.mode());
@@ -49,6 +47,10 @@ public final class Mk61DeviceModel {
         y.set(0);
         z.set(0);
         t.set(0);
+
+        Arrays.fill(registers, 0);
+        Arrays.fill(memory, 0);
+        Arrays.fill(memoryUpload, 0);
     }
 
     public void setPc(int pc) {
@@ -108,21 +110,39 @@ public final class Mk61DeviceModel {
         return t.get();
     }
 
-    public void setRegister(int i, long value) {
-        registers.set(i, value);
+    public void setRegisters(long[] values) {
+        if (values.length != REGISTERS_SIZE) {
+            throw new IllegalArgumentException("Registers array must be of length " + REGISTERS_SIZE);
+        }
+
+        synchronized (registers) {
+            System.arraycopy(values, 0, registers, 0, REGISTERS_SIZE);
+        }
     }
 
-    public long getRegister(int i) {
-        return registers.get(i);
+    public long[] getRegisters() {
+        synchronized (registers) {
+            return Arrays.copyOf(registers, registers.length);
+        }
     }
 
-    public void setCallStack(int i, int value) {
-        callStack.set(i, value);
+
+    public void setCallStack(int[] values) {
+        if (values.length != CALL_STACK_SIZE) {
+            throw new IllegalArgumentException("Call stack array must be of size " + CALL_STACK_SIZE);
+        }
+
+        synchronized (callStack) {
+            System.arraycopy(values, 0, callStack, 0, CALL_STACK_SIZE);
+        }
     }
 
-    public int getCallStack(int i) {
-        return callStack.get(i);
+    public int[] getCallStack() {
+        synchronized (callStack) {
+            return Arrays.copyOf(callStack, callStack.length);
+        }
     }
+
 
     public void setExecutionFlag(boolean flag) {
         executionFlag.set(flag);
@@ -143,18 +163,14 @@ public final class Mk61DeviceModel {
     public void setMemory(int[] array) {
         synchronized (memory) {
             for (int i = 0; i < PROGRAM_MEMORY_SIZE; i++) {
-                memory.set(i, array[i] & 0xFF);
+                memory[i] = array[i] & 0xFF;
             }
         }
     }
 
     public int[] getMemory() {
         synchronized (memory) {
-            int[] mem = new int[PROGRAM_MEMORY_SIZE];
-            for (int i = 0; i < PROGRAM_MEMORY_SIZE; i++) {
-                mem[i] = memory.get(i);
-            }
-            return mem;
+            return Arrays.copyOf(memory, memory.length);
         }
     }
 
@@ -169,18 +185,14 @@ public final class Mk61DeviceModel {
     public void setMemoryUpload(int[] array) {
         synchronized (memoryUpload) {
             for (int i = 0; i < PROGRAM_MEMORY_SIZE; i++) {
-                memoryUpload.set(i, array[i] & 0xFF);
+                memoryUpload[i] = array[i] & 0xFF;
             }
         }
     }
 
     public int[] getMemoryUpload() {
         synchronized (memoryUpload) {
-            int[] mem = new int[PROGRAM_MEMORY_SIZE];
-            for (int i = 0; i < PROGRAM_MEMORY_SIZE; i++) {
-                mem[i] = memoryUpload.get(i);
-            }
-            return mem;
+            return Arrays.copyOf(memoryUpload, memoryUpload.length);
         }
     }
 

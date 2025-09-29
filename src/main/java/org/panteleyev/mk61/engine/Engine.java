@@ -1,5 +1,5 @@
 /*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
+ Copyright © 2025 Petr Panteleyev
  SPDX-License-Identifier: GPL-3.0-only
  */
 package org.panteleyev.mk61.engine;
@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Engine {
     private final AtomicReference<Emulator> emulator = new AtomicReference<>(null);
 
-    private final Mk61DeviceModel deviceModel = new Mk61DeviceModel();
+    private final DeviceModel deviceModel = new DeviceModel();
 
     public Engine() {
     }
 
-    public Mk61DeviceModel deviceModel() {
+    public DeviceModel deviceModel() {
         return deviceModel;
     }
 

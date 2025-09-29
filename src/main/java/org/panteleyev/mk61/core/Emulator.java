@@ -5,7 +5,7 @@
 package org.panteleyev.mk61.core;
 
 import org.panteleyev.mk61.engine.Indicator;
-import org.panteleyev.mk61.engine.Mk61DeviceModel;
+import org.panteleyev.mk61.engine.DeviceModel;
 import org.panteleyev.mk61.engine.Register;
 
 import java.time.Duration;
@@ -15,14 +15,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.panteleyev.mk61.core.MCommands.IK1302_MROM;
 import static org.panteleyev.mk61.core.MCommands.IK1303_MROM;
 import static org.panteleyev.mk61.core.MCommands.IK1306_MROM;
-import static org.panteleyev.mk61.engine.Constants.DISPLAY_DELAY;
-import static org.panteleyev.mk61.engine.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.core.Synchro.IK1302_SROM;
 import static org.panteleyev.mk61.core.Synchro.IK1303_SROM;
 import static org.panteleyev.mk61.core.Synchro.IK1306_SROM;
 import static org.panteleyev.mk61.core.UCommands.IK1302_UROM;
 import static org.panteleyev.mk61.core.UCommands.IK1303_UROM;
 import static org.panteleyev.mk61.core.UCommands.IK1306_UROM;
+import static org.panteleyev.mk61.engine.Constants.DISPLAY_DELAY;
+import static org.panteleyev.mk61.engine.DeviceModel.CALL_STACK_SIZE;
+import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
 
 public final class Emulator extends Thread {
     private static final int REG_2_OFFSET = 0;
@@ -66,9 +67,9 @@ public final class Emulator extends Thread {
     private final boolean[] indComma = new boolean[12];
     private final boolean[] indCommaOld = new boolean[12];
 
-    private final Mk61DeviceModel deviceModel;
+    private final DeviceModel deviceModel;
 
-    public Emulator(Mk61DeviceModel deviceModel) {
+    public Emulator(DeviceModel deviceModel) {
         this.deviceModel = deviceModel;
         setDaemon(true);
         setName("Emulator");
@@ -206,42 +207,47 @@ public final class Emulator extends Thread {
         }
     }
 
-    // Сбор состояния в пригодном для отображения вид
-
     private void updateCallStack() {
         int callStackIndex = 4;
+        var callStack = new int[CALL_STACK_SIZE];
         for (int i = 1; i <= 25; i += 6) {
             var r = ((IK1302.R[i + 3] & 0xF) << 4) | (IK1302.R[i] & 0xF);
-            deviceModel.setCallStack(callStackIndex--, r);
+            callStack[callStackIndex--] = r;
         }
+        deviceModel.setCallStack(callStack);
+    }
+
+    private void updateStack() {
+        deviceModel.setX(getRegister(IK1303.M, 1));
+        deviceModel.setY(getRegister(IK1302.M, 1));
+        deviceModel.setZ(getRegister(IR2_2.M, 85));
+        deviceModel.setT(getRegister(IR2_2.M, 127));
+        deviceModel.setX1(getRegister(IK1306.M, 1));
     }
 
     private void updateModel() {
         if (syncCounter == 4 && IR2_1.microtick == 84) {
-            deviceModel.setX(getRegister(IK1303.M, 1));
-            deviceModel.setY(getRegister(IK1302.M, 1));
-            deviceModel.setZ(getRegister(IR2_2.M, 85));
-            deviceModel.setT(getRegister(IR2_2.M, 127));
-            deviceModel.setX1(getRegister(IK1306.M, 1));
+            updateStack();
 
-            deviceModel.setRegister(0, getRegister(IR2_2.M, REG_0_OFFSET));
-            deviceModel.setRegister(1, getRegister(IR2_2.M, REG_1_OFFSET));
-            deviceModel.setRegister(2, getRegister(IR2_2.M, REG_2_OFFSET));
-            deviceModel.setRegister(3, getRegister(IR2_2.M, REG_3_OFFSET));
-            deviceModel.setRegister(4, getRegister(IR2_1.M, REG_4_OFFSET));
-            deviceModel.setRegister(5, getRegister(IR2_1.M, REG_5_OFFSET));
-            deviceModel.setRegister(6, getRegister(IR2_1.M, REG_6_OFFSET));
-            deviceModel.setRegister(7, getRegister(IR2_1.M, REG_7_OFFSET));
-            deviceModel.setRegister(8, getRegister(IR2_1.M, REG_8_OFFSET));
-            deviceModel.setRegister(9, getRegister(IR2_1.M, REG_9_OFFSET));
-            deviceModel.setRegister(10, getRegister(IK1306.M, REG_A_OFFSET));
-            deviceModel.setRegister(11, getRegister(IK1303.M, REG_B_OFFSET));
-            deviceModel.setRegister(12, getRegister(IK1302.M, REG_C_OFFSET));
-            deviceModel.setRegister(13, getRegister(IR2_2.M, REG_D_OFFSET));
-            deviceModel.setRegister(14, getRegister(IR2_2.M, REG_E_OFFSET));
+            deviceModel.setRegisters(new long[]{
+                    getRegister(IR2_2.M, REG_0_OFFSET),
+                    getRegister(IR2_2.M, REG_1_OFFSET),
+                    getRegister(IR2_2.M, REG_2_OFFSET),
+                    getRegister(IR2_2.M, REG_3_OFFSET),
+                    getRegister(IR2_1.M, REG_4_OFFSET),
+                    getRegister(IR2_1.M, REG_5_OFFSET),
+                    getRegister(IR2_1.M, REG_6_OFFSET),
+                    getRegister(IR2_1.M, REG_7_OFFSET),
+                    getRegister(IR2_1.M, REG_8_OFFSET),
+                    getRegister(IR2_1.M, REG_9_OFFSET),
+                    getRegister(IK1306.M, REG_A_OFFSET),
+                    getRegister(IK1303.M, REG_B_OFFSET),
+                    getRegister(IK1302.M, REG_C_OFFSET),
+                    getRegister(IR2_2.M, REG_D_OFFSET),
+                    getRegister(IR2_2.M, REG_E_OFFSET)
+            });
         }
     }
-
 
     private int[] cmdAddress(int address, int page) {
         int addr1 = address / 7;

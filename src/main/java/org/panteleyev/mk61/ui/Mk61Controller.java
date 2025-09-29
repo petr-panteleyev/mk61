@@ -1,5 +1,5 @@
 /*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
+ Copyright © 2025 Petr Panteleyev
  SPDX-License-Identifier: GPL-3.0-only
  */
 package org.panteleyev.mk61.ui;
@@ -47,7 +47,7 @@ import static org.panteleyev.fx.MenuFactory.menuItem;
 import static org.panteleyev.fx.dialogs.FileChooserBuilder.fileChooser;
 import static org.panteleyev.fx.grid.GridBuilder.gridPane;
 import static org.panteleyev.fx.grid.GridRowBuilder.gridRow;
-import static org.panteleyev.mk61.engine.Mk61DeviceModel.PROGRAM_MEMORY_SIZE;
+import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;
 import static org.panteleyev.mk61.ui.Accelerators.SHORTCUT_1;
 

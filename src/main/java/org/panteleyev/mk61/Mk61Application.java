@@ -1,5 +1,5 @@
 /*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
+ Copyright © 2025 Petr Panteleyev
  SPDX-License-Identifier: GPL-3.0-only
  */
 package org.panteleyev.mk61;
@@ -72,7 +72,7 @@ public class Mk61Application extends Application {
         return LOGGER;
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         launch(args);
     }
 }

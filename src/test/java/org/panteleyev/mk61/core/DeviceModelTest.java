@@ -1,5 +1,5 @@
 /*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
+ Copyright © 2025 Petr Panteleyev
  SPDX-License-Identifier: GPL-3.0-only
  */
 package org.panteleyev.mk61.core;
@@ -7,14 +7,14 @@ package org.panteleyev.mk61.core;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.panteleyev.mk61.engine.Mk61DeviceModel;
+import org.panteleyev.mk61.engine.DeviceModel;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 
-public class Mk61DeviceModelTest {
+public class DeviceModelTest {
 
     private static List<Arguments> testGetRealPc10Arguments() {
         return List.of(
@@ -49,7 +49,6 @@ public class Mk61DeviceModelTest {
     @ParameterizedTest
     @MethodSource("testGetRealPc10Arguments")
     public void testGetRealPc10(int pc, int expected) {
-        assertEquals(expected, Mk61DeviceModel.getRealPc10(pc));
+        assertEquals(expected, DeviceModel.getRealPc10(pc));
     }
-
 }
