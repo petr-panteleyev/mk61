@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev
- SPDX-License-Identifier: GPL-3.0-only
- */
+// Copyright © 2025 Petr Panteleyev
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61;
 
 import javafx.application.Application;
@@ -43,7 +41,7 @@ public class Mk61Application extends Application {
         settings().load();
 
         Font.loadFont(
-                Mk61Application.class.getResource("/fonts/neat-lcd.ttf").toString(),
+                Mk61Application.class.getResource("/fonts/Pixel-LCD-7.ttf").toString(),
                 14
         );
         Font.loadFont(

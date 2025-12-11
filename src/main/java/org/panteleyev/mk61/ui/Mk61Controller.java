@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev
- SPDX-License-Identifier: GPL-3.0-only
- */
+// Copyright © 2025 Petr Panteleyev
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.ui;
 
 import javafx.animation.AnimationTimer;
@@ -76,14 +74,18 @@ public class Mk61Controller extends BaseController {
     private final ToggleButton onButton = new ToggleButton("Вкл");
 
     private final Label[] digitCells = new Label[]{
-            new Label("F"), new Label("F"), new Label("F"), new Label("F"),
-            new Label("F"), new Label("F"), new Label("F"), new Label("F"),
-            new Label("F"), new Label("F"), new Label("F"), new Label("F")
+            new Label(" "), new Label(" "), new Label(" "), new Label(" "),
+            new Label(" "), new Label(" "), new Label(" "), new Label(" "),
+            new Label(" "), new Label(" "), new Label(" "), new Label(" ")
     };
     private final Label[] dotCells = new Label[]{
             new Label(" "), new Label(" "), new Label(" "), new Label(" "),
             new Label(" "), new Label(" "), new Label(" "), new Label(" "),
             new Label(" "), new Label(" "), new Label(" "), new Label(" ")
+    };
+
+    private final String[] LCD_MAP = new String[] {
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "L", "C", "Г", "E", " "
     };
 
     private final StackAndMemoryController stackAndMemoryController = new StackAndMemoryController();
@@ -149,11 +151,13 @@ public class Mk61Controller extends BaseController {
         pane.getStyleClass().add("lcdPanel");
         pane.setMouseTransparent(true);
 
-        for (var l : digitCells) {
-            l.getStyleClass().add("lcd");
+        for (var cell : digitCells) {
+            cell.getStyleClass().add("lcd");
+            HBox.setMargin(cell, new Insets(0, 0, 0, -7));
         }
-        for (var d : dotCells) {
-            d.getStyleClass().add("dotLcd");
+        for (var cell : dotCells) {
+            cell.getStyleClass().add("dotLcd");
+            HBox.setMargin(cell, new Insets(0, 0, 0, -6));
         }
         var cellsPane = new HBox(0);
         cellsPane.getChildren().addAll(
@@ -175,9 +179,6 @@ public class Mk61Controller extends BaseController {
                 digitCells[11], dotCells[11]
         );
         cellsPane.setAlignment(Pos.BOTTOM_CENTER);
-        for (var dc : digitCells) {
-            HBox.setMargin(dc, new Insets(0, 0, 0, -3));
-        }
 
         pane.setCenter(cellsPane);
         return pane;
@@ -337,7 +338,7 @@ public class Mk61Controller extends BaseController {
         var opacity = 1.0;
 
         for (int i = 0; i < 12; i++) {
-            digitCells[i].setText(Long.toString(ri & 0xF, 16).toUpperCase());
+            digitCells[i].setText(LCD_MAP[(int)(ri & 0xF)]);
             digitCells[i].setOpacity(opacity);
             dotCells[i].setText((dots & 1) == 1 ? "." : " ");
             dotCells[i].setOpacity(opacity);
