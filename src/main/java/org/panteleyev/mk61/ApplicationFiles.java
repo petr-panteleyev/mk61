@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
- SPDX-License-Identifier: BSD-2-Clause
- */
+// Copyright © 2025-2026 Petr Panteleyev
+// SPDX-License-Identifier: BSD-2-Clause
 package org.panteleyev.mk61;
 
 import org.panteleyev.freedesktop.directory.XDGBaseDirectory;
@@ -94,9 +92,7 @@ public class ApplicationFiles {
 
     public void read(AppFile appFile, Consumer<InputStream> fileConsumer) {
         var file = fileMap.get(appFile);
-        if (!Files.exists(file)) {
-            return;
-        }
+        if (!Files.exists(file)) return;
 
         try (var in = Files.newInputStream(file)) {
             fileConsumer.accept(in);

@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev
- SPDX-License-Identifier: GPL-3.0-only
- */
+// Copyright © 2025-2026 Petr Panteleyev
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.engine;
 
 import org.panteleyev.mk61.core.Emulator;
@@ -22,10 +20,7 @@ public class Engine {
 
     public void powerOn() {
         synchronized (emulator) {
-            if (emulator.get() != null) {
-                // Дважды не включаем
-                return;
-            }
+            if (emulator.get() != null) return;
 
             deviceModel.powerOn();
             var e = new Emulator(deviceModel);
@@ -36,9 +31,7 @@ public class Engine {
 
     public void powerOff() {
         synchronized (emulator) {
-            if (emulator.get() == null) {
-                return;
-            }
+            if (emulator.get() == null) return;
 
             emulator.get().interrupt();
             emulator.set(null);

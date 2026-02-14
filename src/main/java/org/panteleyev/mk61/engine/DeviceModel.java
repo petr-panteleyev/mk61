@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev
- SPDX-License-Identifier: BSD-2-Clause
- */
+// Copyright © 2025-2026 Petr Panteleyev
+// SPDX-License-Identifier: BSD-2-Clause
 package org.panteleyev.mk61.engine;
 
 import java.util.Arrays;
@@ -143,7 +141,6 @@ public final class DeviceModel {
         }
     }
 
-
     public void setExecutionFlag(boolean flag) {
         executionFlag.set(flag);
     }
@@ -197,15 +194,9 @@ public final class DeviceModel {
     }
 
     public static int getRealPc10(int pc) {
-        var absValue = ((pc & 0xF0) >> 4) * 10 + (pc & 0xF);
-        if (absValue <= 104) {
-            return absValue;
-        }
-
-        if (absValue <= 111) {
-            return absValue - 105;
-        }
-
+        int absValue = ((pc & 0xF0) >> 4) * 10 + (pc & 0xF);
+        if (absValue <= 104) return absValue;
+        if (absValue <= 111) return absValue - 105;
         return absValue - 112;
     }
 }

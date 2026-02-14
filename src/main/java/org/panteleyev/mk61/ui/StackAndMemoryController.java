@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev
- SPDX-License-Identifier: BSD-2-Clause
- */
+// Copyright © 2025-2026 Petr Panteleyev
+// SPDX-License-Identifier: BSD-2-Clause
 package org.panteleyev.mk61.ui;
 
 import javafx.scene.Node;
@@ -16,17 +14,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.panteleyev.fx.BoxFactory.hBox;
-import static org.panteleyev.fx.BoxFactory.vBox;
-import static org.panteleyev.fx.MenuFactory.menu;
-import static org.panteleyev.fx.MenuFactory.menuBar;
-import static org.panteleyev.fx.MenuFactory.menuItem;
-import static org.panteleyev.fx.grid.GridBuilder.gridPane;
-import static org.panteleyev.fx.grid.GridRowBuilder.gridRow;
+import static org.panteleyev.functional.Scope.apply;
+import static org.panteleyev.fx.factories.BoxFactory.hBox;
+import static org.panteleyev.fx.factories.BoxFactory.vBox;
+import static org.panteleyev.fx.factories.LabelFactory.label;
+import static org.panteleyev.fx.factories.MenuFactory.menu;
+import static org.panteleyev.fx.factories.MenuFactory.menuBar;
+import static org.panteleyev.fx.factories.MenuFactory.menuItem;
+import static org.panteleyev.fx.factories.grid.GridPaneFactory.gridPane;
+import static org.panteleyev.fx.factories.grid.GridRow.gridRow;
 import static org.panteleyev.mk61.engine.DeviceModel.CALL_STACK_SIZE;
 import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.engine.DeviceModel.REGISTERS_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_MEMORY_PANEL;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_CONTENT;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_CONTENT_HIGHLIGHTED;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_CONTENT_LABEL;
 import static org.panteleyev.mk61.util.StringUtil.addrToString;
 import static org.panteleyev.mk61.util.StringUtil.padToDisplay;
 import static org.panteleyev.mk61.util.StringUtil.pcToString;
@@ -39,17 +43,15 @@ public class StackAndMemoryController extends BaseController {
     private final List<Label> registers = new ArrayList<>(REGISTERS_SIZE);
     private final List<Label> callStack = new ArrayList<>(CALL_STACK_SIZE);
 
-    private final Label xLabel = new RegisterContentLabel("");
-    private final Label yLabel = new RegisterContentLabel("");
-    private final Label zLabel = new RegisterContentLabel("");
-    private final Label tLabel = new RegisterContentLabel("");
-    private final Label x1Label = new RegisterContentLabel("");
+    private final Label xLabel = registerContentLabel("");
+    private final Label yLabel = registerContentLabel("");
+    private final Label zLabel = registerContentLabel("");
+    private final Label tLabel = registerContentLabel("");
+    private final Label x1Label = registerContentLabel("");
 
-    private final Label pcLabel = new RegisterContentLabel(INITIAL_ADDRESS);
+    private final Label pcLabel = registerContentLabel(INITIAL_ADDRESS);
 
     private final long[] registerValues = new long[REGISTERS_SIZE];
-
-    private final BorderPane root = new BorderPane();
 
     // Memory panel
     private final Label[] addrs = new Label[PROGRAM_MEMORY_SIZE];
@@ -60,11 +62,11 @@ public class StackAndMemoryController extends BaseController {
         Arrays.fill(registerValues, 0);
 
         for (int i = 0; i < REGISTERS_SIZE; i++) {
-            registers.add(new RegisterContentLabel(""));
+            registers.add(registerContentLabel(""));
         }
 
         for (int i = 0; i < CALL_STACK_SIZE; i++) {
-            callStack.add(new RegisterContentLabel(INITIAL_ADDRESS));
+            callStack.add(registerContentLabel(INITIAL_ADDRESS));
         }
 
         var center = vBox(10.0,
@@ -78,10 +80,11 @@ public class StackAndMemoryController extends BaseController {
         center.getStyleClass().add("registerAndStackPanel");
         center.setMouseTransparent(true);
 
-        root.setTop(createMenuBar());
-        root.setCenter(center);
+        setupWindow(apply(new BorderPane(), pane -> {
+            pane.setTop(createMenuBar());
+            pane.setCenter(center);
+        }));
 
-        setupWindow(root);
         getStage().setResizable(false);
         settings().loadStagePosition(this);
     }
@@ -155,30 +158,28 @@ public class StackAndMemoryController extends BaseController {
     }
 
     private Node buildStackPanel() {
-        var grid = gridPane(List.of(
-                gridRow(new RegisterNameLabel("T:"), tLabel),
-                gridRow(new RegisterNameLabel("Z:"), zLabel),
-                gridRow(new RegisterNameLabel("Y:"), yLabel),
-                gridRow(new RegisterNameLabel("X:"), xLabel),
-                gridRow(new RegisterNameLabel("X1:"), x1Label)
-        ));
         return vBox(5.0,
-                new RegisterNameLabel("Стек:"),
-                grid
+                registerNameLabel("Стек:"),
+                gridPane(List.of(
+                        gridRow(registerNameLabel("T:"), tLabel),
+                        gridRow(registerNameLabel("Z:"), zLabel),
+                        gridRow(registerNameLabel("Y:"), yLabel),
+                        gridRow(registerNameLabel("X:"), xLabel),
+                        gridRow(registerNameLabel("X1:"), x1Label)
+                ))
         );
     }
 
     private Node buildCallStackPanel() {
-        var grid = gridPane(List.of(
-                gridRow(callStack.get(4)),
-                gridRow(callStack.get(3)),
-                gridRow(callStack.get(2)),
-                gridRow(callStack.get(1)),
-                gridRow(callStack.get(0))
-        ));
         return vBox(5.0,
-                new RegisterNameLabel("В/О:"),
-                grid
+                registerNameLabel("В/О:"),
+                gridPane(List.of(
+                        gridRow(callStack.get(4)),
+                        gridRow(callStack.get(3)),
+                        gridRow(callStack.get(2)),
+                        gridRow(callStack.get(1)),
+                        gridRow(callStack.get(0))
+                ))
         );
     }
 
@@ -192,18 +193,18 @@ public class StackAndMemoryController extends BaseController {
                 row = 0;
                 column += 2;
             }
-            grid1.add(new RegisterNameLabel(" " + (Integer.toString(i, 16) + ":").toUpperCase()), column, row);
+            grid1.add(registerNameLabel(" " + (Integer.toString(i, 16) + ":").toUpperCase()), column, row);
             grid1.add(registers.get(i), column + 1, row++);
         }
 
         return vBox(5.0,
-                new RegisterNameLabel(" Регистры:"),
+                registerNameLabel(" Регистры:"),
                 grid1
         );
     }
 
     private Node buildPcPanel() {
-        return hBox(5.0, new RegisterNameLabel("PC:"), pcLabel);
+        return hBox(5.0, registerNameLabel("PC:"), pcLabel);
     }
 
     private Node buildMemoryPanel() {
@@ -218,31 +219,28 @@ public class StackAndMemoryController extends BaseController {
                 column = 0;
             }
 
-            addrs[i] = new RegisterNameLabel(addrToString(i) + ":");
-            cells[i] = new RegisterContentLabel("00");
+            addrs[i] = registerNameLabel(addrToString(i) + ":");
+            cells[i] = registerContentLabel("00");
             grid.add(addrs[i], column++, row);
             grid.add(cells[i], column++, row);
         }
 
-        var panel = vBox(10, new RegisterNameLabel("Память:"), grid);
-        panel.getStyleClass().add("memoryPanel");
-        grid.getStyleClass().add("memoryPanel");
+        var panel = vBox(10, registerNameLabel("Память:"), grid);
+        panel.getStyleClass().add(CSS_MEMORY_PANEL);
+        grid.getStyleClass().add(CSS_MEMORY_PANEL);
         return grid;
     }
 
 
     public void showPc(int pc) {
         var effectivePc = DeviceModel.getRealPc10(pc);
+        if (effectivePc == previousPc) return;
 
-        if (effectivePc == previousPc) {
-            return;
-        }
+        addrs[previousPc].getStyleClass().remove(CSS_REGISTER_CONTENT_HIGHLIGHTED);
+        addrs[previousPc].getStyleClass().add(CSS_REGISTER_CONTENT_LABEL);
 
-        addrs[previousPc].getStyleClass().remove("registerContentHighlighted");
-        addrs[previousPc].getStyleClass().add("registerContentLabel");
-
-        addrs[effectivePc].getStyleClass().remove("registerContentLabel");
-        addrs[effectivePc].getStyleClass().add("registerContentHighlighted");
+        addrs[effectivePc].getStyleClass().remove(CSS_REGISTER_CONTENT_LABEL);
+        addrs[effectivePc].getStyleClass().add(CSS_REGISTER_CONTENT_HIGHLIGHTED);
 
         previousPc = effectivePc;
     }
@@ -277,5 +275,13 @@ public class StackAndMemoryController extends BaseController {
         pcLabel.setText(pcToString(deviceModel.getPc()));
         showPc(deviceModel.getPc());
         showMemory(deviceModel.getMemory());
+    }
+
+    private static Label registerNameLabel(String text) {
+        return apply(label(text), l -> l.getStyleClass().add(CSS_REGISTER_CONTENT_LABEL));
+    }
+
+    private static Label registerContentLabel(String text) {
+        return apply(label(text), l -> l.getStyleClass().add(CSS_REGISTER_CONTENT));
     }
 }

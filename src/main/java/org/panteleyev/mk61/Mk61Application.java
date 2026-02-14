@@ -1,4 +1,4 @@
-// Copyright © 2025 Petr Panteleyev
+// Copyright © 2025-2026 Petr Panteleyev
 // SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61;
 
@@ -9,12 +9,15 @@ import javafx.stage.Stage;
 import org.panteleyev.mk61.ui.Mk61Controller;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 import static javafx.application.Platform.runLater;
 import static org.panteleyev.mk61.ApplicationFiles.files;
 import static org.panteleyev.mk61.settings.Settings.settings;
@@ -40,14 +43,8 @@ public class Mk61Application extends Application {
         files().initialize();
         settings().load();
 
-        Font.loadFont(
-                Mk61Application.class.getResource("/fonts/Pixel-LCD-7.ttf").toString(),
-                14
-        );
-        Font.loadFont(
-                Mk61Application.class.getResource("/fonts/JetBrainsMono-Medium.ttf").toString(),
-                14
-        );
+        Font.loadFont(getResourceUrl("/fonts/Pixel-LCD-7.ttf"), 14);
+        Font.loadFont(getResourceUrl("/fonts/JetBrainsMono-Medium.ttf"), 14);
 
         var logProperties = LOG_PROPERTIES.replace("%FILE_PATTERN%",
                 files().getLogDirectory().resolve(LOG_FILE_NAME).toString().replace("\\", "/"));
@@ -72,5 +69,17 @@ public class Mk61Application extends Application {
 
     static void main(String[] args) {
         launch(args);
+    }
+
+    public static String getResourceAsString(String name) {
+        try (var in = Mk61Application.class.getResourceAsStream(name)) {
+            return new String(requireNonNull(in, "Resource " + name + " not found").readAllBytes(), UTF_8);
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    public static String getResourceUrl(String name) {
+        return requireNonNull(Mk61Application.class.getResource(name), "Resource " + name + " not found").toString();
     }
 }

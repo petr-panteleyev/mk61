@@ -12,7 +12,7 @@
 
 Модификации и остальной проект: 
 
-```Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>```
+```Copyright © 2025-2026 Petr Panteleyev <petr@panteleyev.org>```
 
 # Лицензия
 
@@ -36,7 +36,7 @@ Copyright to original versions of the following sources belongs to the authors o
 
 Modifications to the above and the rest of the project:
 
-```Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>```
+```Copyright © 2025-2026 Petr Panteleyev <petr@panteleyev.org>```
 
 # License
 

@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Copyright © 2025 Petr Panteleyev
-  SPDX-License-Identifier: BSD-2-Clause
-  -->
+<!-- Copyright © 2025-2026 Petr Panteleyev -->
+<!-- SPDX-License-Identifier: BSD-2-Clause -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.panteleyev</groupId>
     <artifactId>mk61</artifactId>
-    <version>25.12.1</version>
+    <version>26.2.1</version>
     <packaging>jar</packaging>
     <name>MK-61</name>
 
@@ -89,22 +87,22 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <!-- Plugins -->
         <mavenCleanPluginVersion>3.5.0</mavenCleanPluginVersion>
-        <mavenResourcePluginVersion>3.3.1</mavenResourcePluginVersion>
-        <mavenCompilerPluginVersion>3.14.1</mavenCompilerPluginVersion>
-        <mavenJarPluginVersion>3.4.2</mavenJarPluginVersion>
+        <mavenResourcePluginVersion>3.4.0</mavenResourcePluginVersion>
+        <mavenCompilerPluginVersion>3.15.0</mavenCompilerPluginVersion>
+        <mavenJarPluginVersion>3.5.0</mavenJarPluginVersion>
         <mavenSurefirePluginVersion>3.5.4</mavenSurefirePluginVersion>
         <mavenSurefireReportPluginVersion>3.5.4</mavenSurefireReportPluginVersion>
-        <mavenDependencyPluginVersion>3.8.1</mavenDependencyPluginVersion>
+        <mavenDependencyPluginVersion>3.9.0</mavenDependencyPluginVersion>
         <mavenExecPluginVersion>3.5.0</mavenExecPluginVersion>
-        <jlinkMavenPluginVersion>1.2.0</jlinkMavenPluginVersion>
-        <jpackageMavenPluginVersion>1.7.1</jpackageMavenPluginVersion>
+        <jlinkMavenPluginVersion>1.2.1</jlinkMavenPluginVersion>
+        <jpackageMavenPluginVersion>1.7.3</jpackageMavenPluginVersion>
         <!-- Dependencies -->
-        <javaFxVersion>25</javaFxVersion>
+        <javaFxVersion>25.0.2</javaFxVersion>
         <controlsFxVersion>11.2.2</controlsFxVersion>
         <javaCommonsVersion>1.6.0</javaCommonsVersion>
-        <javaFxHelpersVersion>1.21.0</javaFxHelpersVersion>
+        <javaFxHelpersVersion>2.3.0</javaFxHelpersVersion>
         <javaFreeDesktopVersion>0.5.1</javaFreeDesktopVersion>
-        <jUnitVersion>5.13.1</jUnitVersion>
+        <jUnitVersion>6.0.2</jUnitVersion>
     </properties>
 
     <dependencies>

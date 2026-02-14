@@ -1,4 +1,4 @@
-// Copyright © 2025 Petr Panteleyev
+// Copyright © 2025-2026 Petr Panteleyev
 // SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.ui;
 
@@ -17,7 +17,6 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -38,16 +37,37 @@ import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.panteleyev.fx.LabelFactory.label;
-import static org.panteleyev.fx.MenuFactory.menu;
-import static org.panteleyev.fx.MenuFactory.menuBar;
-import static org.panteleyev.fx.MenuFactory.menuItem;
-import static org.panteleyev.fx.dialogs.FileChooserBuilder.fileChooser;
-import static org.panteleyev.fx.grid.GridBuilder.gridPane;
-import static org.panteleyev.fx.grid.GridRowBuilder.gridRow;
+import static javafx.scene.layout.GridPane.setHalignment;
+import static org.panteleyev.functional.Scope.apply;
+import static org.panteleyev.fx.factories.BoxFactory.vBox;
+import static org.panteleyev.fx.factories.ButtonFactory.button;
+import static org.panteleyev.fx.factories.FileChooserFactory.fileChooser;
+import static org.panteleyev.fx.factories.LabelFactory.label;
+import static org.panteleyev.fx.factories.MenuFactory.menu;
+import static org.panteleyev.fx.factories.MenuFactory.menuBar;
+import static org.panteleyev.fx.factories.MenuFactory.menuItem;
+import static org.panteleyev.fx.factories.grid.GridPaneFactory.gridPane;
+import static org.panteleyev.fx.factories.grid.GridRow.gridRow;
 import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;
 import static org.panteleyev.mk61.ui.Accelerators.SHORTCUT_1;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_BLACK_BUTTON;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_BUTTON_GRID;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_DOT_LCD;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_F_BUTTON;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_F_LABEL;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_GRAY_BUTTON;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_KEYPAD_BUTTON;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_K_BUTTON;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_K_LABEL;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_LCD;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_LCD_PANEL;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_RED_BUTTON;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_E_LABEL;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_LABEL;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_ROOT;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_SWITCH_PANEL;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_TITLE_LABEL;
 
 public class Mk61Controller extends BaseController {
     public static final String APP_TITLE = "МК-61";
@@ -68,10 +88,10 @@ public class Mk61Controller extends BaseController {
     private static final FileChooser.ExtensionFilter EXTENSION_FILTER =
             new FileChooser.ExtensionFilter("Дамп памяти", "*.txt");
 
-    private final BorderPane root = new BorderPane();
-    private final HBox toolBox = new HBox(10);
-
-    private final ToggleButton onButton = new ToggleButton("Вкл");
+    private final ToggleButton onButton = apply(new ToggleButton("Вкл"), button -> {
+        button.setOnAction(_ -> onPowerOn());
+        button.setFocusTraversable(false);
+    });
 
     private final Label[] digitCells = new Label[]{
             new Label(" "), new Label(" "), new Label(" "), new Label(" "),
@@ -84,7 +104,7 @@ public class Mk61Controller extends BaseController {
             new Label(" "), new Label(" "), new Label(" "), new Label(" ")
     };
 
-    private final String[] LCD_MAP = new String[] {
+    private final String[] LCD_MAP = new String[]{
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "L", "C", "Г", "E", " "
     };
 
@@ -96,25 +116,21 @@ public class Mk61Controller extends BaseController {
         super(stage);
         stage.setResizable(false);
         stage.getIcons().add(Picture.ICON.getImage());
-        root.getStyleClass().add("root");
 
-        root.setTop(createMenuBar());
-
-        var titleLabel = new Label("ЭЛЕКТРОНИКА  МК 61");
-        titleLabel.getStyleClass().add("titleLabel");
-
-        var center = new VBox(
-                createDisplay(),
-                titleLabel,
-                createSwitches(),
-                createKeyboardGrid()
-        );
-        center.setAlignment(Pos.CENTER);
-        center.setFillWidth(true);
-        root.setCenter(center);
-        root.setRight(toolBox);
-
-        setupWindow(root);
+        setupWindow(apply(new BorderPane(), root -> {
+            root.getStyleClass().add(CSS_ROOT);
+            root.setTop(createMenuBar());
+            root.setCenter(apply(vBox(
+                    createDisplay(),
+                    apply(label("ЭЛЕКТРОНИКА  МК 61"), label -> label.getStyleClass().add(CSS_TITLE_LABEL)),
+                    createSwitches(),
+                    createKeyboardGrid()
+            ), box -> {
+                box.setAlignment(Pos.CENTER);
+                box.setFillWidth(true);
+            }));
+            root.setRight(new HBox(10));
+        }));
         getStage().sizeToScene();
 
         animationTimer.start();
@@ -137,7 +153,8 @@ public class Mk61Controller extends BaseController {
                         menuItem("Выход", _ -> onExit())
                 ),
                 menu("Окно",
-                        menuItem("Регистры и память", SHORTCUT_1, this::onRegistersAndStackWindow)
+                        apply(menuItem("Регистры и память", this::onRegistersAndStackWindow),
+                                item -> item.setAccelerator(SHORTCUT_1))
 //                        checkMenuItem("Память", false, SHORTCUT_2, this::onMemoryPanel)
                 )//,
 //                menu("Справка"
@@ -147,16 +164,12 @@ public class Mk61Controller extends BaseController {
     }
 
     private BorderPane createDisplay() {
-        var pane = new BorderPane();
-        pane.getStyleClass().add("lcdPanel");
-        pane.setMouseTransparent(true);
-
         for (var cell : digitCells) {
-            cell.getStyleClass().add("lcd");
+            cell.getStyleClass().add(CSS_LCD);
             HBox.setMargin(cell, new Insets(0, 0, 0, -7));
         }
         for (var cell : dotCells) {
-            cell.getStyleClass().add("dotLcd");
+            cell.getStyleClass().add(CSS_DOT_LCD);
             HBox.setMargin(cell, new Insets(0, 0, 0, -6));
         }
         var cellsPane = new HBox(0);
@@ -180,137 +193,94 @@ public class Mk61Controller extends BaseController {
         );
         cellsPane.setAlignment(Pos.BOTTOM_CENTER);
 
-        pane.setCenter(cellsPane);
-        return pane;
+        return apply(new BorderPane(), pane -> {
+            pane.getStyleClass().add(CSS_LCD_PANEL);
+            pane.setMouseTransparent(true);
+            pane.setCenter(cellsPane);
+        });
     }
 
     private GridPane createSwitches() {
-        var offButton = new ToggleButton(" ");
-        offButton.setOnAction(_ -> onPowerOff());
-        offButton.setFocusTraversable(false);
-        onButton.setOnAction(_ -> onPowerOn());
-        onButton.setFocusTraversable(false);
-        var powerSwitch = new SegmentedButton(offButton, onButton);
-
-        var radianButton = new ToggleButton("Р");
-        radianButton.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.RADIAN));
-        radianButton.setFocusTraversable(false);
-        var gRadianButton = new ToggleButton("ГРД");
-        gRadianButton.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.GRAD));
-        gRadianButton.setFocusTraversable(false);
-        var degreeButton = new ToggleButton("Г");
-        degreeButton.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.DEGREE));
-        degreeButton.setFocusTraversable(false);
-        var trigonometricSwitch = new SegmentedButton(radianButton, gRadianButton, degreeButton);
-        radianButton.fire();
-
-        var pane = gridPane(List.of(gridRow(
-                powerSwitch,
-                trigonometricSwitch
-        )));
-        GridPane.setHalignment(powerSwitch, HPos.LEFT);
-        GridPane.setHgrow(powerSwitch, Priority.ALWAYS);
-        GridPane.setHalignment(trigonometricSwitch, HPos.RIGHT);
-        GridPane.setHgrow(trigonometricSwitch, Priority.ALWAYS);
-        pane.setHgap(20);
-        pane.setAlignment(Pos.CENTER);
-        pane.getStyleClass().add("switchPanel");
-        return pane;
+        return apply(gridPane(List.of(gridRow(
+                apply(new SegmentedButton(
+                        apply(new ToggleButton(" "), button -> {
+                            button.setOnAction(_ -> onPowerOff());
+                            button.setFocusTraversable(false);
+                        }),
+                        onButton
+                ), button -> {
+                    setHalignment(button, HPos.LEFT);
+                    GridPane.setHgrow(button, Priority.ALWAYS);
+                }),
+                apply(new SegmentedButton(
+                        apply(new ToggleButton("Р"), button -> {
+                            button.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.RADIAN));
+                            button.setFocusTraversable(false);
+                            button.fire();
+                        }),
+                        apply(new ToggleButton("ГРД"), button -> {
+                            button.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.GRAD));
+                            button.setFocusTraversable(false);
+                        }),
+                        apply(new ToggleButton("Г"), button -> {
+                            button.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.DEGREE));
+                            button.setFocusTraversable(false);
+                        })
+                ), button -> {
+                    setHalignment(button, HPos.RIGHT);
+                    GridPane.setHgrow(button, Priority.ALWAYS);
+                })
+        ))), pane -> {
+            pane.setHgap(20);
+            pane.setAlignment(Pos.CENTER);
+            pane.getStyleClass().add(CSS_SWITCH_PANEL);
+        });
     }
 
     private Node createKeyboardGrid() {
-        var aLabel = new RegisterLabel("a");
-        var bLabel = new RegisterLabel("b");
-        var cLabel = new RegisterLabel("c");
-        var dLabel = new RegisterLabel("d");
-        var eLabel = new RegisterLabel("e");
-        eLabel.getStyleClass().add("registerELabel");
+        var constraints = new ColumnConstraints();
+        constraints.setPercentWidth(20);
 
-        var columnConstraints = new ColumnConstraints();
-        columnConstraints.setPercentWidth(20);
-
-        var grid = gridPane(List.of(
-                gridRow(
-                        new ButtonNode("F", "", "", "fButton", KeyboardButton.F, keyboardButtonConsumer),
-                        new ButtonNode("ШГ→", "x<0", "", "blackButton", KeyboardButton.STEP_RIGHT,
-                                keyboardButtonConsumer),
-                        new ButtonNode("←ШГ", "x=0", "", "blackButton", KeyboardButton.STEP_LEFT,
-                                keyboardButtonConsumer),
-                        new ButtonNode("В/О", "x≥0", "", "blackButton", KeyboardButton.RETURN,
-                                keyboardButtonConsumer),
-                        new ButtonNode("С/П", "x≠0", "", "blackButton", KeyboardButton.RUN_STOP,
-                                keyboardButtonConsumer)
+        return gridPane(List.of(
+                        gridRow(yellowButton("F", KeyboardButton.F),
+                                blackButton("ШГ→", "x<0", KeyboardButton.STEP_RIGHT),
+                                blackButton("←ШГ", "x=0", KeyboardButton.STEP_LEFT),
+                                blackButton("В/О", "x≥0", KeyboardButton.RETURN),
+                                blackButton("С/П", "x≠0", KeyboardButton.RUN_STOP)),
+                        gridRow(blueButton("K", KeyboardButton.K),
+                                blackButton("П→x", "L0", KeyboardButton.LOAD),
+                                blackButton("x→П", "L1", KeyboardButton.STORE),
+                                blackButton("БП", "L2", KeyboardButton.GOTO),
+                                blackButton("ПП", "L3", KeyboardButton.GOSUB)),
+                        gridRow(grayButton("7", "sin", "[x]", KeyboardButton.D7),
+                                grayButton("8", "cos", "{x}", KeyboardButton.D8),
+                                grayButton("9", "tg", "max", KeyboardButton.D9),
+                                grayButton("➖", "√¯", "", KeyboardButton.MINUS),
+                                grayButton("➗", "1/x", "", KeyboardButton.DIVISION)),
+                        gridRow(grayButton("4", "sin⁻¹", "|x|", KeyboardButton.D4),
+                                grayButton("5", "cos⁻¹", "ЗН", KeyboardButton.D5),
+                                grayButton("6", "tg⁻¹", ".⃖,", KeyboardButton.D6),
+                                grayButton("➕", "π", ".⃗,", KeyboardButton.PLUS),
+                                grayButton("✖", "x²", "", KeyboardButton.MULTIPLICATION)),
+                        gridRow(grayButton("1", "eˣ", "", KeyboardButton.D1),
+                                grayButton("2", "lg", "", KeyboardButton.D2),
+                                grayButton("3", "ln", ".‚⃖„", KeyboardButton.D3),
+                                grayButton("←→", "xʸ", "․‚⃗„", KeyboardButton.SWAP),
+                                grayButton("В↑", "Вх", "СЧ", KeyboardButton.PUSH),
+                                apply(registerLabel("e"), label -> label.getStyleClass().add(CSS_REGISTER_E_LABEL))),
+                        gridRow(grayButton("0", "10ˣ", "НОП", KeyboardButton.D0),
+                                grayButton("∙", "Ѻ", "⋀", KeyboardButton.DOT),
+                                grayButton("/-/", "АВТ", "⋁", KeyboardButton.SIGN),
+                                grayButton("ВП", "ПРГ", "⨁", KeyboardButton.EE),
+                                redButton("Cx", "CF", "ИНВ", KeyboardButton.CLEAR_X)),
+                        gridRow(label(""),
+                                apply(registerLabel("a"), label -> setHalignment(label, HPos.CENTER)),
+                                apply(registerLabel("b"), label -> setHalignment(label, HPos.CENTER)),
+                                apply(registerLabel("c"), label -> setHalignment(label, HPos.CENTER)),
+                                apply(registerLabel("d"), label -> setHalignment(label, HPos.CENTER)))
                 ),
-                gridRow(
-                        new ButtonNode("K", "", "", "kButton", KeyboardButton.K, keyboardButtonConsumer),
-                        new ButtonNode("П→x", "L0", "", "blackButton", KeyboardButton.LOAD,
-                                keyboardButtonConsumer),
-                        new ButtonNode("x→П", "L1", "", "blackButton", KeyboardButton.STORE,
-                                keyboardButtonConsumer),
-                        new ButtonNode("БП", "L2", "", "blackButton", KeyboardButton.GOTO,
-                                keyboardButtonConsumer),
-                        new ButtonNode("ПП", "L3", "", "blackButton", KeyboardButton.GOSUB,
-                                keyboardButtonConsumer)
-                ),
-                gridRow(
-                        new ButtonNode("7", "sin", "[x]", "grayButton", KeyboardButton.D7,
-                                keyboardButtonConsumer),
-                        new ButtonNode("8", "cos", "{x}", "grayButton", KeyboardButton.D8,
-                                keyboardButtonConsumer),
-                        new ButtonNode("9", "tg", "max", "grayButton", KeyboardButton.D9,
-                                keyboardButtonConsumer),
-                        new ButtonNode("➖", "√¯", "", "grayButton", KeyboardButton.MINUS, keyboardButtonConsumer),
-                        new ButtonNode("➗", "1/x", "", "grayButton", KeyboardButton.DIVISION,
-                                keyboardButtonConsumer)
-                ),
-                gridRow(
-                        new ButtonNode("4", "sin⁻¹", "|x|", "grayButton", KeyboardButton.D4,
-                                keyboardButtonConsumer),
-                        new ButtonNode("5", "cos⁻¹", "ЗН", "grayButton", KeyboardButton.D5,
-                                keyboardButtonConsumer),
-                        new ButtonNode("6", "tg⁻¹", ".⃖,", "grayButton", KeyboardButton.D6,
-                                keyboardButtonConsumer),
-                        new ButtonNode("➕", "π", ".⃗,", "grayButton", KeyboardButton.PLUS,
-                                keyboardButtonConsumer),
-                        new ButtonNode("✖", "x²", "", "grayButton", KeyboardButton.MULTIPLICATION,
-                                keyboardButtonConsumer)
-                ),
-                gridRow(
-                        new ButtonNode("1", "eˣ", "", "grayButton", KeyboardButton.D1,
-                                keyboardButtonConsumer),
-                        new ButtonNode("2", "lg", "", "grayButton", KeyboardButton.D2,
-                                keyboardButtonConsumer),
-                        new ButtonNode("3", "ln", ".‚⃖„", "grayButton", KeyboardButton.D3,
-
-                                keyboardButtonConsumer),
-                        new ButtonNode("←→", "xʸ", "․‚⃗„", "grayButton", KeyboardButton.SWAP,
-                                keyboardButtonConsumer),
-                        new ButtonNode("В↑", "Вх", "СЧ", "grayButton", KeyboardButton.PUSH,
-                                keyboardButtonConsumer),
-                        eLabel
-                ),
-                gridRow(
-                        new ButtonNode("0", "10ˣ", "НОП", "grayButton", KeyboardButton.D0,
-                                keyboardButtonConsumer),
-                        new ButtonNode("∙", "Ѻ", "⋀", "grayButton", KeyboardButton.DOT, keyboardButtonConsumer),
-                        new ButtonNode("/-/", "АВТ", "⋁", "grayButton", KeyboardButton.SIGN,
-                                keyboardButtonConsumer),
-                        new ButtonNode("ВП", "ПРГ", "⨁", "grayButton", KeyboardButton.EE,
-                                keyboardButtonConsumer),
-                        new ButtonNode("Cx", "CF", "ИНВ", "redButton", KeyboardButton.CLEAR_X,
-                                keyboardButtonConsumer)
-                ),
-                gridRow(label(""), aLabel, bLabel, cLabel, dLabel)
-        ));
-        grid.getColumnConstraints().addAll(columnConstraints, columnConstraints, columnConstraints, columnConstraints,
-                columnConstraints);
-
-        grid.getStyleClass().add("buttonGrid");
-        GridPane.setHalignment(aLabel, HPos.CENTER);
-        GridPane.setHalignment(bLabel, HPos.CENTER);
-        GridPane.setHalignment(cLabel, HPos.CENTER);
-        GridPane.setHalignment(dLabel, HPos.CENTER);
-        return grid;
+                List.of(constraints, constraints, constraints, constraints, constraints),
+                List.of(CSS_BUTTON_GRID));
     }
 
     private void onExit() {
@@ -334,11 +304,10 @@ public class Mk61Controller extends BaseController {
     private void showIndicator(Indicator indicator) {
         var ri = indicator.indicator();
         var dots = indicator.dots();
-//            var opacity = engine.automaticMode().get() ? 0.3 : 1.0;
         var opacity = 1.0;
 
         for (int i = 0; i < 12; i++) {
-            digitCells[i].setText(LCD_MAP[(int)(ri & 0xF)]);
+            digitCells[i].setText(LCD_MAP[(int) (ri & 0xF)]);
             digitCells[i].setOpacity(opacity);
             dotCells[i].setText((dots & 1) == 1 ? "." : " ");
             dotCells[i].setOpacity(opacity);
@@ -356,9 +325,7 @@ public class Mk61Controller extends BaseController {
 
     private void onSaveMemoryDump() {
         var file = fileChooser("Сохранить дамп памяти", List.of(EXTENSION_FILTER)).showSaveDialog(getStage());
-        if (file == null) {
-            return;
-        }
+        if (file == null) return;
 
         try (var out = new OutputStreamWriter(new FileOutputStream(file))) {
             var bytes = engine.deviceModel().getMemory();
@@ -376,9 +343,7 @@ public class Mk61Controller extends BaseController {
 
     private void onLoadMemoryDump() {
         var file = fileChooser("Загрузить дамп памяти", List.of(EXTENSION_FILTER)).showOpenDialog(getStage());
-        if (file == null) {
-            return;
-        }
+        if (file == null) return;
 
         try (var reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             var codes = new int[PROGRAM_MEMORY_SIZE];
@@ -387,14 +352,11 @@ public class Mk61Controller extends BaseController {
             var lines = reader.lines().toList();
             outerLoop:
             for (var line : lines) {
-                if (line.startsWith("#")) {
-                    continue;
-                }
+                if (line.startsWith("#")) continue;
+
                 var strings = line.trim().split(" ");
                 for (var str : strings) {
-                    if (index >= codes.length) {
-                        break outerLoop;
-                    }
+                    if (index >= codes.length) break outerLoop;
                     codes[index++] = Integer.parseInt(str, 16);
                 }
             }
@@ -405,7 +367,6 @@ public class Mk61Controller extends BaseController {
         }
     }
 
-
     @Override
     protected void onWindowHiding() {
         super.onWindowHiding();
@@ -414,9 +375,85 @@ public class Mk61Controller extends BaseController {
     }
 
     private void closeChildWindows() {
-        WindowManager.newInstance().getControllerStream()
+        WindowManager.windowManager().getControllerStream()
                 .filter(c -> c != this)
                 .toList()
                 .forEach(c -> ((BaseController) c).onClose());
+    }
+
+    private static Label registerLabel(String text) {
+        return apply(label(text), l -> l.getStyleClass().add(CSS_REGISTER_LABEL));
+    }
+
+    private Node blackButton(String text, String fText, KeyboardButton keyboardButton) {
+        return buttonNode(text, fText, "", CSS_BLACK_BUTTON, keyboardButton);
+    }
+
+    private Node grayButton(String text, String fText, String kText, KeyboardButton keyboardButton) {
+        return buttonNode(text, fText, kText, CSS_GRAY_BUTTON, keyboardButton);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private Node redButton(String text, String fText, String kText, KeyboardButton keyboardButton) {
+        return buttonNode(text, fText, kText, CSS_RED_BUTTON, keyboardButton);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private Node yellowButton(String text, KeyboardButton keyboardButton) {
+        return buttonNode(text, "", "", CSS_F_BUTTON, keyboardButton);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private Node blueButton(String text, KeyboardButton keyboardButton) {
+        return buttonNode(text, "", "", CSS_K_BUTTON, keyboardButton);
+    }
+
+    private Node buttonNode(String text,
+            String fText,
+            String kText,
+            String buttonClass,
+            KeyboardButton keyboardButton)
+    {
+        return apply(vBox(), box -> {
+            if (!fText.isEmpty() || !kText.isEmpty()) {
+                int col = 0;
+                var column = new ColumnConstraints();
+                column.setPercentWidth(50);
+
+                var upperBox = apply(new GridPane(0, 0), gridPane -> {
+                    gridPane.setAlignment(Pos.CENTER);
+                    gridPane.setMaxWidth(Double.MAX_VALUE);
+                });
+
+                if (!fText.isEmpty()) {
+                    upperBox.add(apply(label(fText), label -> {
+                        label.getStyleClass().add(CSS_F_LABEL);
+                        setHalignment(label, HPos.CENTER);
+                    }), col++, 0);
+                    upperBox.getColumnConstraints().add(column);
+                }
+                if (!kText.isEmpty()) {
+                    upperBox.add(apply(label(kText), label -> {
+                        label.getStyleClass().add(CSS_K_LABEL);
+                        setHalignment(label, HPos.CENTER);
+                    }), col, 0);
+                    upperBox.getColumnConstraints().add(column);
+                }
+                box.getChildren().add(upperBox);
+            }
+
+            box.getChildren().add(apply(button(text), button -> {
+                button.getStyleClass().add(CSS_KEYPAD_BUTTON);
+                button.getStyleClass().add(buttonClass);
+                button.setOnAction(_ -> keyboardButtonConsumer.accept(keyboardButton));
+                button.setMaxWidth(Double.MAX_VALUE);
+                button.setMaxHeight(Double.MAX_VALUE);
+                button.setFocusTraversable(false);
+            }));
+
+            box.setAlignment(Pos.BOTTOM_CENTER);
+            box.setMaxWidth(Double.MAX_VALUE);
+            box.setMaxHeight(Double.MAX_VALUE);
+        });
     }
 }

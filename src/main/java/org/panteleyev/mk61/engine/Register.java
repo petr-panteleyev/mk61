@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
- SPDX-License-Identifier: BSD-2-Clause
- */
+// Copyright © 2025-2026 Petr Panteleyev
+// SPDX-License-Identifier: BSD-2-Clause
 package org.panteleyev.mk61.engine;
 
 import java.util.Arrays;
@@ -67,9 +65,7 @@ public final class Register {
 
         // Убираем концевые нули
         for (int i = 8; i >= 0; i--) {
-            if (i == dotPosition - 1) {
-                break;
-            }
+            if (i == dotPosition - 1) break;
             if (charBuffer[i] == '0') {
                 charBuffer[i] = ' ';
             } else {

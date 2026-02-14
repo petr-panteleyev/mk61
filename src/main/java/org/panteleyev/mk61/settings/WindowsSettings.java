@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
- SPDX-License-Identifier: BSD-2-Clause
- */
+// Copyright © 2025-2026 Petr Panteleyev
+// SPDX-License-Identifier: BSD-2-Clause
 package org.panteleyev.mk61.settings;
 
 import org.panteleyev.commons.xml.XMLEventReaderWrapper;
@@ -36,7 +34,7 @@ final class WindowsSettings {
     }
 
     void save(OutputStream out) {
-        WindowManager.newInstance().getControllerStream().forEach(this::storeWindowPosition);
+        WindowManager.windowManager().getControllerStream().forEach(this::storeWindowPosition);
 
         try (var w = XMLStreamWriterWrapper.newInstance(out)) {
             w.document(ROOT_ELEMENT, () -> {
