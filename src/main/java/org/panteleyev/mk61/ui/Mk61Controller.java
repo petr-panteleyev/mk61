@@ -8,8 +8,11 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
@@ -17,6 +20,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -35,12 +39,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static javafx.scene.layout.GridPane.setHalignment;
-import static org.panteleyev.functional.Scope.apply;
-import static org.panteleyev.fx.factories.BoxFactory.vBox;
-import static org.panteleyev.fx.factories.ButtonFactory.button;
 import static org.panteleyev.fx.factories.FileChooserFactory.fileChooser;
 import static org.panteleyev.fx.factories.LabelFactory.label;
 import static org.panteleyev.fx.factories.MenuFactory.menu;
@@ -88,20 +88,17 @@ public class Mk61Controller extends BaseController {
     private static final FileChooser.ExtensionFilter EXTENSION_FILTER =
             new FileChooser.ExtensionFilter("Дамп памяти", "*.txt");
 
-    private final ToggleButton onButton = apply(new ToggleButton("Вкл"), button -> {
-        button.setOnAction(_ -> onPowerOn());
-        button.setFocusTraversable(false);
-    });
+    private final ToggleButton powerOnButton = powerOnButton();
 
     private final Label[] digitCells = new Label[]{
-            new Label(" "), new Label(" "), new Label(" "), new Label(" "),
-            new Label(" "), new Label(" "), new Label(" "), new Label(" "),
-            new Label(" "), new Label(" "), new Label(" "), new Label(" ")
+            label(" "), label(" "), label(" "), label(" "),
+            label(" "), label(" "), label(" "), label(" "),
+            label(" "), label(" "), label(" "), label(" ")
     };
     private final Label[] dotCells = new Label[]{
-            new Label(" "), new Label(" "), new Label(" "), new Label(" "),
-            new Label(" "), new Label(" "), new Label(" "), new Label(" "),
-            new Label(" "), new Label(" "), new Label(" "), new Label(" ")
+            label(" "), label(" "), label(" "), label(" "),
+            label(" "), label(" "), label(" "), label(" "),
+            label(" "), label(" "), label(" "), label(" ")
     };
 
     private final String[] LCD_MAP = new String[]{
@@ -110,31 +107,16 @@ public class Mk61Controller extends BaseController {
 
     private final StackAndMemoryController stackAndMemoryController = new StackAndMemoryController();
 
-    private final Consumer<KeyboardButton> keyboardButtonConsumer = engine::processButton;
-
     public Mk61Controller(Stage stage) {
         super(stage);
         stage.setResizable(false);
         stage.getIcons().add(Picture.ICON.getImage());
 
-        setupWindow(apply(new BorderPane(), root -> {
-            root.getStyleClass().add(CSS_ROOT);
-            root.setTop(createMenuBar());
-            root.setCenter(apply(vBox(
-                    createDisplay(),
-                    apply(label("ЭЛЕКТРОНИКА  МК 61"), label -> label.getStyleClass().add(CSS_TITLE_LABEL)),
-                    createSwitches(),
-                    createKeyboardGrid()
-            ), box -> {
-                box.setAlignment(Pos.CENTER);
-                box.setFillWidth(true);
-            }));
-            root.setRight(new HBox(10));
-        }));
+        setupWindow(root());
         getStage().sizeToScene();
 
         animationTimer.start();
-        onButton.fire();
+        powerOnButton.fire();
 
         settings().loadStagePosition(this);
     }
@@ -142,6 +124,22 @@ public class Mk61Controller extends BaseController {
     @Override
     public String getTitle() {
         return APP_TITLE;
+    }
+
+    private Parent root() {
+        var root = new BorderPane(centerBox(), createMenuBar(), new HBox(10), null, null);
+        root.getStyleClass().add(CSS_ROOT);
+        return root;
+    }
+
+    private Node centerBox() {
+        var titleLabel = new Label("ЭЛЕКТРОНИКА  МК 61");
+        titleLabel.getStyleClass().add(CSS_TITLE_LABEL);
+
+        var box = new VBox(createDisplay(), titleLabel, createSwitches(), createKeyboardGrid());
+        box.setAlignment(Pos.CENTER);
+        box.setFillWidth(true);
+        return box;
     }
 
     private MenuBar createMenuBar() {
@@ -153,14 +151,19 @@ public class Mk61Controller extends BaseController {
                         menuItem("Выход", _ -> onExit())
                 ),
                 menu("Окно",
-                        apply(menuItem("Регистры и память", this::onRegistersAndStackWindow),
-                                item -> item.setAccelerator(SHORTCUT_1))
+                        registersAndMemoryMenuItem()
 //                        checkMenuItem("Память", false, SHORTCUT_2, this::onMemoryPanel)
                 )//,
 //                menu("Справка"
 //                        menuItem("О программе", _ -> new AboutDialog(this).showAndWait())
 //                )
         );
+    }
+
+    private MenuItem registersAndMemoryMenuItem() {
+        var menuItem = menuItem("Регистры и память", this::onRegistersAndStackWindow);
+        menuItem.setAccelerator(SHORTCUT_1);
+        return menuItem;
     }
 
     private BorderPane createDisplay() {
@@ -193,48 +196,18 @@ public class Mk61Controller extends BaseController {
         );
         cellsPane.setAlignment(Pos.BOTTOM_CENTER);
 
-        return apply(new BorderPane(), pane -> {
-            pane.getStyleClass().add(CSS_LCD_PANEL);
-            pane.setMouseTransparent(true);
-            pane.setCenter(cellsPane);
-        });
+        var pane = new BorderPane(cellsPane);
+        pane.getStyleClass().add(CSS_LCD_PANEL);
+        pane.setMouseTransparent(true);
+        return pane;
     }
 
     private GridPane createSwitches() {
-        return apply(gridPane(List.of(gridRow(
-                apply(new SegmentedButton(
-                        apply(new ToggleButton(" "), button -> {
-                            button.setOnAction(_ -> onPowerOff());
-                            button.setFocusTraversable(false);
-                        }),
-                        onButton
-                ), button -> {
-                    setHalignment(button, HPos.LEFT);
-                    GridPane.setHgrow(button, Priority.ALWAYS);
-                }),
-                apply(new SegmentedButton(
-                        apply(new ToggleButton("Р"), button -> {
-                            button.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.RADIAN));
-                            button.setFocusTraversable(false);
-                            button.fire();
-                        }),
-                        apply(new ToggleButton("ГРД"), button -> {
-                            button.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.GRAD));
-                            button.setFocusTraversable(false);
-                        }),
-                        apply(new ToggleButton("Г"), button -> {
-                            button.setOnAction(_ -> engine.deviceModel().setAngleMode(AngleMode.DEGREE));
-                            button.setFocusTraversable(false);
-                        })
-                ), button -> {
-                    setHalignment(button, HPos.RIGHT);
-                    GridPane.setHgrow(button, Priority.ALWAYS);
-                })
-        ))), pane -> {
-            pane.setHgap(20);
-            pane.setAlignment(Pos.CENTER);
-            pane.getStyleClass().add(CSS_SWITCH_PANEL);
-        });
+        var pane = gridPane(List.of(gridRow(powerSwitch(), trigonometricSwitch(engine))));
+        pane.setHgap(20);
+        pane.setAlignment(Pos.CENTER);
+        pane.getStyleClass().add(CSS_SWITCH_PANEL);
+        return pane;
     }
 
     private Node createKeyboardGrid() {
@@ -267,18 +240,13 @@ public class Mk61Controller extends BaseController {
                                 grayButton("3", "ln", ".‚⃖„", KeyboardButton.D3),
                                 grayButton("←→", "xʸ", "․‚⃗„", KeyboardButton.SWAP),
                                 grayButton("В↑", "Вх", "СЧ", KeyboardButton.PUSH),
-                                apply(registerLabel("e"), label -> label.getStyleClass().add(CSS_REGISTER_E_LABEL))),
+                                eLabel()),
                         gridRow(grayButton("0", "10ˣ", "НОП", KeyboardButton.D0),
                                 grayButton("∙", "Ѻ", "⋀", KeyboardButton.DOT),
                                 grayButton("/-/", "АВТ", "⋁", KeyboardButton.SIGN),
                                 grayButton("ВП", "ПРГ", "⨁", KeyboardButton.EE),
                                 redButton("Cx", "CF", "ИНВ", KeyboardButton.CLEAR_X)),
-                        gridRow(label(""),
-                                apply(registerLabel("a"), label -> setHalignment(label, HPos.CENTER)),
-                                apply(registerLabel("b"), label -> setHalignment(label, HPos.CENTER)),
-                                apply(registerLabel("c"), label -> setHalignment(label, HPos.CENTER)),
-                                apply(registerLabel("d"), label -> setHalignment(label, HPos.CENTER)))
-                ),
+                        gridRow(label(""), abcdLabel("a"), abcdLabel("b"), abcdLabel("c"), abcdLabel("d"))),
                 List.of(constraints, constraints, constraints, constraints, constraints),
                 List.of(CSS_BUTTON_GRID));
     }
@@ -382,11 +350,25 @@ public class Mk61Controller extends BaseController {
     }
 
     private static Label registerLabel(String text) {
-        return apply(label(text), l -> l.getStyleClass().add(CSS_REGISTER_LABEL));
+        var label = new Label(text);
+        label.getStyleClass().add(CSS_REGISTER_LABEL);
+        return label;
+    }
+
+    private static Label abcdLabel(String text) {
+        var label = registerLabel(text);
+        setHalignment(label, HPos.CENTER);
+        return label;
+    }
+
+    private static Label eLabel() {
+        var label = registerLabel("e");
+        label.getStyleClass().add(CSS_REGISTER_E_LABEL);
+        return label;
     }
 
     private Node blackButton(String text, String fText, KeyboardButton keyboardButton) {
-        return buttonNode(text, fText, "", CSS_BLACK_BUTTON, keyboardButton);
+        return buttonNode(text, fText, null, CSS_BLACK_BUTTON, keyboardButton);
     }
 
     private Node grayButton(String text, String fText, String kText, KeyboardButton keyboardButton) {
@@ -400,12 +382,12 @@ public class Mk61Controller extends BaseController {
 
     @SuppressWarnings("SameParameterValue")
     private Node yellowButton(String text, KeyboardButton keyboardButton) {
-        return buttonNode(text, "", "", CSS_F_BUTTON, keyboardButton);
+        return buttonNode(text, null, null, CSS_F_BUTTON, keyboardButton);
     }
 
     @SuppressWarnings("SameParameterValue")
     private Node blueButton(String text, KeyboardButton keyboardButton) {
-        return buttonNode(text, "", "", CSS_K_BUTTON, keyboardButton);
+        return buttonNode(text, null, null, CSS_K_BUTTON, keyboardButton);
     }
 
     private Node buttonNode(String text,
@@ -414,46 +396,96 @@ public class Mk61Controller extends BaseController {
             String buttonClass,
             KeyboardButton keyboardButton)
     {
-        return apply(vBox(), box -> {
-            if (!fText.isEmpty() || !kText.isEmpty()) {
-                int col = 0;
-                var column = new ColumnConstraints();
-                column.setPercentWidth(50);
+        var box = new VBox();
+        if (fText != null || kText != null) {
+            int col = 0;
+            var column = new ColumnConstraints();
+            column.setPercentWidth(50);
 
-                var upperBox = apply(new GridPane(0, 0), gridPane -> {
-                    gridPane.setAlignment(Pos.CENTER);
-                    gridPane.setMaxWidth(Double.MAX_VALUE);
-                });
+            var upperBox = buttonNodeUpperBox();
 
-                if (!fText.isEmpty()) {
-                    upperBox.add(apply(label(fText), label -> {
-                        label.getStyleClass().add(CSS_F_LABEL);
-                        setHalignment(label, HPos.CENTER);
-                    }), col++, 0);
-                    upperBox.getColumnConstraints().add(column);
-                }
-                if (!kText.isEmpty()) {
-                    upperBox.add(apply(label(kText), label -> {
-                        label.getStyleClass().add(CSS_K_LABEL);
-                        setHalignment(label, HPos.CENTER);
-                    }), col, 0);
-                    upperBox.getColumnConstraints().add(column);
-                }
-                box.getChildren().add(upperBox);
+            if (fText != null) {
+                upperBox.add(buttonNodeUpperLabel(fText, CSS_F_LABEL), col++, 0);
+                upperBox.getColumnConstraints().add(column);
             }
+            if (kText != null) {
+                upperBox.add(buttonNodeUpperLabel(kText, CSS_K_LABEL), col, 0);
+                upperBox.getColumnConstraints().add(column);
+            }
+            box.getChildren().add(upperBox);
+        }
 
-            box.getChildren().add(apply(button(text), button -> {
-                button.getStyleClass().add(CSS_KEYPAD_BUTTON);
-                button.getStyleClass().add(buttonClass);
-                button.setOnAction(_ -> keyboardButtonConsumer.accept(keyboardButton));
-                button.setMaxWidth(Double.MAX_VALUE);
-                button.setMaxHeight(Double.MAX_VALUE);
-                button.setFocusTraversable(false);
-            }));
+        box.getChildren().add(keyPadButton(text, buttonClass, keyboardButton, engine));
+        box.setAlignment(Pos.BOTTOM_CENTER);
+        box.setMaxWidth(Double.MAX_VALUE);
+        box.setMaxHeight(Double.MAX_VALUE);
+        return box;
+    }
 
-            box.setAlignment(Pos.BOTTOM_CENTER);
-            box.setMaxWidth(Double.MAX_VALUE);
-            box.setMaxHeight(Double.MAX_VALUE);
-        });
+    private static GridPane buttonNodeUpperBox() {
+        var gridPane = new GridPane(0, 0);
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.setMaxWidth(Double.MAX_VALUE);
+        return gridPane;
+    }
+
+    private static Label buttonNodeUpperLabel(String text, String cssClass) {
+        var label = new Label(text);
+        label.getStyleClass().add(cssClass);
+        setHalignment(label, HPos.CENTER);
+        return label;
+    }
+
+    private static Button keyPadButton(String text, String cssClass, KeyboardButton keyboardButton, Engine engine) {
+        var button = new Button(text);
+        button.getStyleClass().add(CSS_KEYPAD_BUTTON);
+        button.getStyleClass().add(cssClass);
+        button.setOnAction(_ -> engine.processButton(keyboardButton));
+        button.setMaxWidth(Double.MAX_VALUE);
+        button.setMaxHeight(Double.MAX_VALUE);
+        button.setFocusTraversable(false);
+        return button;
+    }
+
+    private ToggleButton powerOnButton() {
+        var button = new ToggleButton("Вкл");
+        button.setOnAction(_ -> onPowerOn());
+        button.setFocusTraversable(false);
+        return button;
+    }
+
+    private ToggleButton powerOffButton() {
+        var button = new ToggleButton(" ");
+        button.setOnAction(_ -> onPowerOff());
+        button.setFocusTraversable(false);
+        return button;
+    }
+
+    private SegmentedButton powerSwitch() {
+        var button = new SegmentedButton(powerOffButton(), powerOnButton);
+        setHalignment(button, HPos.LEFT);
+        GridPane.setHgrow(button, Priority.ALWAYS);
+        return button;
+    }
+
+    private static ToggleButton trigonometricButton(AngleMode mode, Engine engine, boolean fire) {
+        var button = new ToggleButton(mode.label());
+        button.setOnAction(_ -> engine.deviceModel().setAngleMode(mode));
+        button.setFocusTraversable(false);
+        if (fire) {
+            button.fire();
+        }
+        return button;
+    }
+
+    private static SegmentedButton trigonometricSwitch(Engine engine) {
+        var button = new SegmentedButton(
+                trigonometricButton(AngleMode.RADIAN, engine, true),
+                trigonometricButton(AngleMode.GRAD, engine, false),
+                trigonometricButton(AngleMode.DEGREE, engine, false)
+        );
+        setHalignment(button, HPos.RIGHT);
+        GridPane.setHgrow(button, Priority.ALWAYS);
+        return button;
     }
 }

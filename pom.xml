@@ -7,7 +7,7 @@
 
     <groupId>org.panteleyev</groupId>
     <artifactId>mk61</artifactId>
-    <version>26.2.1</version>
+    <version>26.2.2</version>
     <packaging>jar</packaging>
     <name>MK-61</name>
 
@@ -100,9 +100,9 @@
         <javaFxVersion>25.0.2</javaFxVersion>
         <controlsFxVersion>11.2.2</controlsFxVersion>
         <javaCommonsVersion>1.6.0</javaCommonsVersion>
-        <javaFxHelpersVersion>2.3.0</javaFxHelpersVersion>
+        <javaFxHelpersVersion>2.3.2</javaFxHelpersVersion>
         <javaFreeDesktopVersion>0.5.1</javaFreeDesktopVersion>
-        <jUnitVersion>6.0.2</jUnitVersion>
+        <jUnitVersion>6.0.3</jUnitVersion>
     </properties>
 
     <dependencies>

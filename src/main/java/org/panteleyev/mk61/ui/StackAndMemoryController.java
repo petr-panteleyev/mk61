@@ -14,10 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.panteleyev.functional.Scope.apply;
 import static org.panteleyev.fx.factories.BoxFactory.hBox;
 import static org.panteleyev.fx.factories.BoxFactory.vBox;
-import static org.panteleyev.fx.factories.LabelFactory.label;
 import static org.panteleyev.fx.factories.MenuFactory.menu;
 import static org.panteleyev.fx.factories.MenuFactory.menuBar;
 import static org.panteleyev.fx.factories.MenuFactory.menuItem;
@@ -80,10 +78,7 @@ public class StackAndMemoryController extends BaseController {
         center.getStyleClass().add("registerAndStackPanel");
         center.setMouseTransparent(true);
 
-        setupWindow(apply(new BorderPane(), pane -> {
-            pane.setTop(createMenuBar());
-            pane.setCenter(center);
-        }));
+        setupWindow(new BorderPane(center, createMenuBar(), null, null, null));
 
         getStage().setResizable(false);
         settings().loadStagePosition(this);
@@ -278,10 +273,14 @@ public class StackAndMemoryController extends BaseController {
     }
 
     private static Label registerNameLabel(String text) {
-        return apply(label(text), l -> l.getStyleClass().add(CSS_REGISTER_CONTENT_LABEL));
+        var label = new Label(text);
+        label.getStyleClass().add(CSS_REGISTER_CONTENT_LABEL);
+        return label;
     }
 
     private static Label registerContentLabel(String text) {
-        return apply(label(text), l -> l.getStyleClass().add(CSS_REGISTER_CONTENT));
+        var label = new Label(text);
+        label.getStyleClass().add(CSS_REGISTER_CONTENT);
+        return label;
     }
 }
