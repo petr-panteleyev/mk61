@@ -16,6 +16,10 @@
 
 .aboutLabel {
     -fx-font-family: "Dialog";
-    -fx-font-size: 28;
+    -fx-font-size: 18;
     -fx-font-weight: bold;
+}
+.aboutIcon {
+    -fx-fit-width: 48;
+    -fx-fit-height: 48;
 }

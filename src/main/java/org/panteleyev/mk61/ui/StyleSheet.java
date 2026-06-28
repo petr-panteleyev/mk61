@@ -6,6 +6,9 @@ import static org.panteleyev.fx.Controller.encodeStyleSheet;
 import static org.panteleyev.mk61.Mk61Application.getResourceAsString;
 
 final class StyleSheet {
+    public static final double BIG_SPACING = 10.0;
+    public static final double SMALL_SPACING = 5.0;
+
     static final String CSS_REGISTER_CONTENT = "registerContent";
     static final String CSS_REGISTER_CONTENT_LABEL = "registerContentLabel";
     static final String CSS_REGISTER_CONTENT_HIGHLIGHTED = "registerContentHighlighted";
@@ -29,6 +32,10 @@ final class StyleSheet {
     static final String CSS_K_LABEL = "kLabel";
 
     public static final String MAIN = encodeStyleSheet(getResourceAsString("/main.css"));
+
+    static final String CSS_ABOUT_LABEL = "aboutLabel";
+    static final String CSS_ABOUT_ICON = "aboutIcon";
+
     public static final String ABOUT_DIALOG = encodeStyleSheet(getResourceAsString("/about-dialog.css"));
 
     private StyleSheet() {

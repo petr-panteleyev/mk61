@@ -1,12 +1,11 @@
 # МК-61
 
-[![License](https://www.panteleyev.org/badges/license-gpl-3.svg)](LICENSE)
-[![JDK](https://www.panteleyev.org/badges/java-25.svg)](https://jdk.java.net/25/)
-[![JDK](https://www.panteleyev.org/badges/javafx-25.svg)](https://jdk.java.net/javafx25/)
-
-Эмулятор программируемого микрокалькулятора МК-61.
+Эмулятор программируемого микрокалькулятора Электроника МК-61.
 
 Ядро эмулятора взято из проекта [https://github.com/cax/pmk-android](https://github.com/cax/pmk-android)
+
+* [Лицензии и копирайт](COPYRIGHT.md)
+* [Как построить и запустить](BUILD.md)
 
 ![МК-61](docs/main_window.png)
 
@@ -42,3 +41,14 @@
 00 00 00 00 00 
 ```
 </details>
+
+---
+
+# MK-61
+
+Emulator of the Soviet RPN programmable calculator Electronika MK-61.
+
+Emulator core is borrowed from [https://github.com/cax/pmk-android](https://github.com/cax/pmk-android).
+
+* [License and Copyright](COPYRIGHT.md)
+* [Build and run](BUILD.md)

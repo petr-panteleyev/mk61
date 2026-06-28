@@ -6,11 +6,13 @@ import javafx.application.Application;
 import javafx.scene.control.Alert;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import org.panteleyev.mk61.bundles.UiBundle;
 import org.panteleyev.mk61.ui.Mk61Controller;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -18,12 +20,16 @@ import java.util.logging.Logger;
 import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
+import static java.util.ResourceBundle.getBundle;
 import static javafx.application.Platform.runLater;
 import static org.panteleyev.mk61.ApplicationFiles.files;
 import static org.panteleyev.mk61.settings.Settings.settings;
 
 public class Mk61Application extends Application {
     private static final Logger LOGGER = Logger.getLogger(Mk61Application.class.getName());
+
+    public static final ResourceBundle UI = getBundle(UiBundle.class.getCanonicalName());
+    public static final ResourceBundle BUILD_INFO_BUNDLE = getBundle("buildInfo");
 
     private final static String LOG_PROPERTIES = """
             handlers                                = java.util.logging.FileHandler

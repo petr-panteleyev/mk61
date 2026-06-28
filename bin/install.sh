@@ -2,7 +2,7 @@
 
 if [ -z "$1" ]
 then
-  echo "Usage: sudo install.sh <install dir>"
+  echo "Usage: install.sh <install dir>"
   exit
 fi
 
@@ -12,31 +12,19 @@ INSTALL_DIR=$1/mk61
 echo -n "Installing into $INSTALL_DIR... "
 mkdir -p $INSTALL_DIR
 rm -rf $INSTALL_DIR/*
-cp $LAUNCH_DIR/../icons/icon.png $INSTALL_DIR
-cp -r $LAUNCH_DIR/../target/jlink/* $INSTALL_DIR
+cp -r $LAUNCH_DIR/../target/dist/MK-61/* $INSTALL_DIR
+echo "done"
 
-echo "
-#!/bin/sh
-$INSTALL_DIR/bin/java \\
-  -XX:NewRatio=1 \\
-  -Xms100m \\
-  -Xmx100m \\
-  -XX:+UseCompactObjectHeaders \\
-  --enable-native-access=javafx.graphics \\
-  --sun-misc-unsafe-memory-access=allow \\
-  --module mk/org.panteleyev.mk61.Mk61Application
-" > $INSTALL_DIR/mk61.sh
-
-chmod +x $INSTALL_DIR/mk61.sh
-
+echo -n "Creating desktop entry... "
 echo "[Desktop Entry]
 Type=Application
 Version=1.5
-Name=МК-61
-Comment=Эмулятор микрокалькулятора МК-61
-Icon=$INSTALL_DIR/icon.png
-Exec=/bin/sh $INSTALL_DIR/mk61.sh
+Name=MK-61
+Name[ru_RU]=МК-61
+Comment=MK-61 emulator
+Comment[ru_RU]=Эмулятор микрокалькулятора МК-61
+Icon=$INSTALL_DIR/lib/MK-61.png
+Exec=$INSTALL_DIR/bin/MK-61
 Categories=Game;Java;
-" > $INSTALL_DIR/mk61.desktop
-
+" > $HOME/.local/share/applications/mk61.desktop
 echo "done"

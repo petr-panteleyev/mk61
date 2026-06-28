@@ -46,8 +46,19 @@ import static org.panteleyev.fx.factories.LabelFactory.label;
 import static org.panteleyev.fx.factories.MenuFactory.menu;
 import static org.panteleyev.fx.factories.MenuFactory.menuBar;
 import static org.panteleyev.fx.factories.MenuFactory.menuItem;
+import static org.panteleyev.fx.factories.StringFactory.ELLIPSIS;
+import static org.panteleyev.fx.factories.StringFactory.string;
 import static org.panteleyev.fx.factories.grid.GridPaneFactory.gridPane;
 import static org.panteleyev.fx.factories.grid.GridRow.gridRow;
+import static org.panteleyev.mk61.Mk61Application.UI;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_ABOUT;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_EXIT;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_FILE;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_HELP;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_LOAD;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_REGISTERS_AND_MEMORY;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_SAVE;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_WINDOW;
 import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;
 import static org.panteleyev.mk61.ui.Accelerators.SHORTCUT_1;
@@ -144,24 +155,23 @@ public class Mk61Controller extends BaseController {
 
     private MenuBar createMenuBar() {
         return menuBar(
-                menu("Файл",
-                        menuItem("Сохранить...", _ -> onSaveMemoryDump()),
-                        menuItem("Загрузить...", _ -> onLoadMemoryDump()),
+                menu(string(UI, I18N_FILE),
+                        menuItem(string(UI, I18N_SAVE, ELLIPSIS), _ -> onSaveMemoryDump()),
+                        menuItem(string(UI, I18N_LOAD, ELLIPSIS), _ -> onLoadMemoryDump()),
                         new SeparatorMenuItem(),
-                        menuItem("Выход", _ -> onExit())
+                        menuItem(string(UI, I18N_EXIT), _ -> onExit())
                 ),
-                menu("Окно",
+                menu(string(UI, I18N_WINDOW),
                         registersAndMemoryMenuItem()
-//                        checkMenuItem("Память", false, SHORTCUT_2, this::onMemoryPanel)
-                )//,
-//                menu("Справка"
-//                        menuItem("О программе", _ -> new AboutDialog(this).showAndWait())
-//                )
+                ),
+                menu(string(UI, I18N_HELP),
+                        menuItem(string(UI, I18N_ABOUT, ELLIPSIS), _ -> new AboutDialog().showAndWait())
+                )
         );
     }
 
     private MenuItem registersAndMemoryMenuItem() {
-        var menuItem = menuItem("Регистры и память", this::onRegistersAndStackWindow);
+        var menuItem = menuItem(string(UI, I18N_REGISTERS_AND_MEMORY), this::onRegistersAndStackWindow);
         menuItem.setAccelerator(SHORTCUT_1);
         return menuItem;
     }

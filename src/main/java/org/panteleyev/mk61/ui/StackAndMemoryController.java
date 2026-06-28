@@ -19,8 +19,16 @@ import static org.panteleyev.fx.factories.BoxFactory.vBox;
 import static org.panteleyev.fx.factories.MenuFactory.menu;
 import static org.panteleyev.fx.factories.MenuFactory.menuBar;
 import static org.panteleyev.fx.factories.MenuFactory.menuItem;
+import static org.panteleyev.fx.factories.StringFactory.COLON;
+import static org.panteleyev.fx.factories.StringFactory.string;
 import static org.panteleyev.fx.factories.grid.GridPaneFactory.gridPane;
 import static org.panteleyev.fx.factories.grid.GridRow.gridRow;
+import static org.panteleyev.mk61.Mk61Application.UI;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_CLOSE;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_FILE;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_REGISTERS;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_REGISTERS_AND_MEMORY;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_STACK;
 import static org.panteleyev.mk61.engine.DeviceModel.CALL_STACK_SIZE;
 import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.engine.DeviceModel.REGISTERS_SIZE;
@@ -86,13 +94,13 @@ public class StackAndMemoryController extends BaseController {
 
     @Override
     public String getTitle() {
-        return "Регистры и память";
+        return string(UI, I18N_REGISTERS_AND_MEMORY);
     }
 
     private MenuBar createMenuBar() {
         return menuBar(
-                menu("Файл",
-                        menuItem("Закрыть", _ -> onClose())
+                menu(string(UI, I18N_FILE),
+                        menuItem(string(UI, I18N_CLOSE), _ -> onClose())
                 )
         );
     }
@@ -154,7 +162,7 @@ public class StackAndMemoryController extends BaseController {
 
     private Node buildStackPanel() {
         return vBox(5.0,
-                registerNameLabel("Стек:"),
+                registerNameLabel(string(UI, I18N_STACK, COLON)),
                 gridPane(List.of(
                         gridRow(registerNameLabel("T:"), tLabel),
                         gridRow(registerNameLabel("Z:"), zLabel),
@@ -193,7 +201,7 @@ public class StackAndMemoryController extends BaseController {
         }
 
         return vBox(5.0,
-                registerNameLabel(" Регистры:"),
+                registerNameLabel(" " + string(UI, I18N_REGISTERS, COLON)),
                 grid1
         );
     }
