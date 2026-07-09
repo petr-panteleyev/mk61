@@ -17,8 +17,6 @@
 # Лицензия
 
 + Весь проект: GPL-3.0-only
-+ Вышеупомянутые исходные тексты и производные от них: GPL-3.0-only
-+ Остальные исходные тексты: BSD-2-Clause
 
 ---
 
@@ -41,5 +39,3 @@ Modifications to the above and the rest of the project:
 # License
 
 + Project: GPL-3.0-only
-+ Sources mentioned above and derived: GPL-3.0-only
-+ The rest of sources: BSD-2-Clause

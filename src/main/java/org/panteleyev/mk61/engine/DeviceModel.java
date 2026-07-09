@@ -1,6 +1,8 @@
 // Copyright © 2025-2026 Petr Panteleyev
-// SPDX-License-Identifier: BSD-2-Clause
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.engine;
+
+import org.panteleyev.mk61.library.Program;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +26,9 @@ public final class DeviceModel {
     private final AtomicLong t = new AtomicLong(0);
 
     private final long[] registers = new long[REGISTERS_SIZE];
+    private final long[] registersUpload = new long[REGISTERS_SIZE];
+    private final AtomicBoolean registersUploadFlag = new AtomicBoolean(false);
+
     private final int[] callStack = new int[CALL_STACK_SIZE];
 
     private final AtomicBoolean executionFlag = new AtomicBoolean(false);
@@ -124,6 +129,29 @@ public final class DeviceModel {
         }
     }
 
+    public void setRegistersUploadFlag(boolean flag) {
+        registersUploadFlag.set(flag);
+    }
+
+    public boolean getRegistersUploadFlag() {
+        return registersUploadFlag.get();
+    }
+
+    public void setRegistersUpload(long[] values) {
+        if (values.length != REGISTERS_SIZE) {
+            throw new IllegalArgumentException("Registers array must be of length " + REGISTERS_SIZE);
+        }
+
+        synchronized (registersUpload) {
+            System.arraycopy(values, 0, registersUpload, 0, REGISTERS_SIZE);
+        }
+    }
+
+    public long[] getRegistersUpload() {
+        synchronized (registersUpload) {
+            return Arrays.copyOf(registersUpload, registersUpload.length);
+        }
+    }
 
     public void setCallStack(int[] values) {
         if (values.length != CALL_STACK_SIZE) {
@@ -198,5 +226,25 @@ public final class DeviceModel {
         if (absValue <= 104) return absValue;
         if (absValue <= 111) return absValue - 105;
         return absValue - 112;
+    }
+
+    public void uploadProgram(Program program) {
+        var programBytes = new int[PROGRAM_MEMORY_SIZE];
+        Arrays.fill(programBytes, 0);
+        for (var index = 0; index < program.cells().size(); index++) {
+            programBytes[index] = program.cells().get(index).opCode();
+        }
+
+        setMemoryUpload(programBytes);
+        setMemoryUploadFlag(true);
+    }
+
+    public void uploadRegisters(Program program) {
+        var programRegisters = getRegisters();
+        for (var index = 0; index < program.registers().size(); index++) {
+            programRegisters[index] = program.registers().get(index).value();
+        }
+        setRegistersUpload(programRegisters);
+        setRegistersUploadFlag(true);
     }
 }

@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
- SPDX-License-Identifier: BSD-2-Clause
- */
+// Copyright © 2025-2026 Petr Panteleyev
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.engine;
 
 public record Indicator(long indicator, int dots) {

@@ -106,7 +106,7 @@
     -fx-padding: 15 30 15 30;
 }
 
-.root {
+.rootPanel {
     -fx-background-color: #5c5c5c;
 }
 
@@ -125,7 +125,7 @@
     -fx-background-color: #363942;
     -fx-background-radius: 10;
     -fx-background-insets: 0;
-    -fx-padding: 10 10 10 10;
+    -fx-padding: 20 20 20 20;
 }
 
 .registerLabel {
@@ -147,17 +147,11 @@
     -fx-font-size: 20;
 }
 
-.registerContentHighlighted {
-    -fx-font-family: 'JetBrains Mono';
-    -fx-text-fill: red;
-    -fx-font-weight: bold;
-    -fx-font-size: 20;
-}
-
 .registerContent {
     -fx-font-family: 'JetBrains Mono';
     -fx-background-color: #283f37;
     -fx-text-fill: lightgreen;
+    -fx-font-weight: normal;
     -fx-font-size: 20;
 }
 
@@ -166,4 +160,69 @@
     -fx-background-radius: 10;
     -fx-background-insets: 0;
     -fx-padding: 10 10 10 10;
+}
+
+.mnemonicsAddress {
+    -fx-background-color: #283f37;
+    -fx-font-family: 'JetBrains Mono';
+    -fx-font-size: 20;
+    -fx-text-fill: white;
+}
+
+.memoryCellContentHighlighted {
+    -fx-font-family: 'JetBrains Mono';
+    -fx-background-color: lightgreen;
+    -fx-text-fill: #283f37;
+    -fx-font-weight: bold;
+    -fx-font-size: 20;
+}
+
+.memoryCellContent {
+    -fx-font-family: 'JetBrains Mono';
+    -fx-background-color: #283f37;
+    -fx-text-fill: lightgreen;
+    -fx-font-weight: normal;
+    -fx-font-size: 20;
+}
+
+.programDescription {
+    -fx-font-family: 'JetBrains Mono';
+    -fx-font-size: 16;
+}
+
+.programInfoLabel {
+    -fx-font-family: 'JetBrains Mono';
+    -fx-text-fill: white;
+    -fx-font-size: 16;
+}
+
+.programWindowTab {
+    -fx-background-color: #363942;
+    -fx-text-fill: white;
+}
+
+.tab-header-background {
+    -fx-background-color: #363942;
+}
+
+.tab {
+    -fx-background-color: #5c5c5c;
+}
+
+.tab-label {
+    -fx-background-color: #5c5c5c;
+    -fx-text-fill: white;
+    -fx-font-family: 'JetBrains Mono';
+    -fx-font-size: 16;
+}
+
+.programInfoGrid {
+    -fx-hgap: 5;
+    -fx-vgap: 5;
+}
+
+.check-box {
+    -fx-font-family: 'JetBrains Mono';
+    -fx-text-fill: white;
+    -fx-font-size: 18;
 }

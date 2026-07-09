@@ -42,7 +42,7 @@ public class Mk61Application extends Application {
             java.util.logging.SimpleFormatter.format = %1$tF %1$tk:%1$tM:%1$tS %2$s%n%4$s: %5$s%6$s%n
             """;
 
-    private static final String LOG_FILE_NAME = "mk52.log";
+    private static final String LOG_FILE_NAME = "mk61.log";
 
     @Override
     public void start(Stage stage) throws Exception {

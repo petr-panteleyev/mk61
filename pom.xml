@@ -7,7 +7,7 @@
 
     <groupId>org.panteleyev</groupId>
     <artifactId>mk61</artifactId>
-    <version>26.6.1</version>
+    <version>26.7.1</version>
     <packaging>jar</packaging>
     <name>MK-61</name>
 
@@ -95,13 +95,16 @@
         <mavenDependencyPluginVersion>3.9.0</mavenDependencyPluginVersion>
         <mavenExecPluginVersion>3.5.0</mavenExecPluginVersion>
         <jpackageMavenPluginVersion>1.8.0</jpackageMavenPluginVersion>
+        <jaxbMavenPluginVersion>4.0.16</jaxbMavenPluginVersion>
         <!-- Dependencies -->
         <javaFxVersion>26.0.1</javaFxVersion>
         <controlsFxVersion>11.2.2</controlsFxVersion>
         <javaCommonsVersion>1.6.0</javaCommonsVersion>
         <javaFxHelpersVersion>2.6.0</javaFxHelpersVersion>
         <javaFreeDesktopVersion>0.5.1</javaFreeDesktopVersion>
+        <jaxbVersion>3.0.1</jaxbVersion>
         <jUnitVersion>6.1.0</jUnitVersion>
+        <assertJVersion>4.0.0-M1</assertJVersion>
     </properties>
 
     <repositories>
@@ -159,10 +162,28 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- JAXB -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${jaxbVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${jaxbVersion}</version>
+        </dependency>
+        <!-- Test -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${jUnitVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertJVersion}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -176,6 +197,23 @@
         </resources>
 
         <plugins>
+            <plugin>
+                <groupId>org.jvnet.jaxb</groupId>
+                <artifactId>jaxb-maven-plugin</artifactId>
+                <version>${jaxbMavenPluginVersion}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <extension>true</extension>
+                    <schemaDirectory>${project.basedir}/src/main/resources/xsd</schemaDirectory>
+                    <generatePackage>org.panteleyev.mk61.jaxb</generatePackage>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

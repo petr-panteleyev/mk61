@@ -12,4 +12,3 @@ dependency-reduced-pom.xml
 
 # Ignore Gradle project-specific cache directory
 .gradle
-.run

@@ -1,11 +1,9 @@
-/*
- https://github.com/cax/pmk-android/blob/master/pmk/src/com/cax/pmk/emulator/Emulator.java
- SPDX-License-Identifier: GPL-3.0-only
- */
+// https://github.com/cax/pmk-android/blob/master/pmk/src/com/cax/pmk/emulator/Emulator.java
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.core;
 
-import org.panteleyev.mk61.engine.Indicator;
 import org.panteleyev.mk61.engine.DeviceModel;
+import org.panteleyev.mk61.engine.Indicator;
 import org.panteleyev.mk61.engine.Register;
 
 import java.time.Duration;
@@ -229,6 +227,26 @@ public final class Emulator extends Thread {
         if (syncCounter == 4 && IR2_1.microtick == 84) {
             updateStack();
 
+            if (deviceModel.getRegistersUploadFlag()) {
+                var registersUpload = deviceModel.getRegistersUpload();
+                setRegister(IR2_2.M, REG_0_OFFSET, registersUpload[0]);
+                setRegister(IR2_2.M, REG_1_OFFSET, registersUpload[1]);
+                setRegister(IR2_2.M, REG_2_OFFSET, registersUpload[2]);
+                setRegister(IR2_2.M, REG_3_OFFSET, registersUpload[3]);
+                setRegister(IR2_1.M, REG_4_OFFSET, registersUpload[4]);
+                setRegister(IR2_1.M, REG_5_OFFSET, registersUpload[5]);
+                setRegister(IR2_1.M, REG_6_OFFSET, registersUpload[6]);
+                setRegister(IR2_1.M, REG_7_OFFSET, registersUpload[7]);
+                setRegister(IR2_1.M, REG_8_OFFSET, registersUpload[8]);
+                setRegister(IR2_1.M, REG_9_OFFSET, registersUpload[9]);
+                setRegister(IK1306.M, REG_A_OFFSET, registersUpload[10]);
+                setRegister(IK1303.M, REG_B_OFFSET, registersUpload[11]);
+                setRegister(IK1302.M, REG_C_OFFSET, registersUpload[12]);
+                setRegister(IR2_2.M, REG_D_OFFSET, registersUpload[13]);
+                setRegister(IR2_2.M, REG_E_OFFSET, registersUpload[14]);
+                deviceModel.setRegistersUploadFlag(false);
+            }
+
             deviceModel.setRegisters(new long[]{
                     getRegister(IR2_2.M, REG_0_OFFSET),
                     getRegister(IR2_2.M, REG_1_OFFSET),
@@ -328,5 +346,13 @@ public final class Emulator extends Thread {
             ind += 3;
         }
         return register;
+    }
+
+    private void setRegister(int[] mcuRegister, int startBit, long newValue) {
+        int ind = startBit;
+        for (int i = 0; i < 12; i++) {
+            mcuRegister[ind] = Register.getTetrad(newValue, i);
+            ind += 3;
+        }
     }
 }

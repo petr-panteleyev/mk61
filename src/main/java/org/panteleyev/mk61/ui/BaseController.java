@@ -1,5 +1,5 @@
 // Copyright © 2025-2026 Petr Panteleyev
-// SPDX-License-Identifier: BSD-2-Clause
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.ui;
 
 import javafx.stage.Stage;
@@ -17,5 +17,14 @@ public class BaseController extends Controller {
 
     public void onClose() {
         getStage().close();
+    }
+
+    @Override
+    public boolean isVisible() {
+        return getStage().isShowing();
+    }
+
+    public void show() {
+        getStage().show();
     }
 }

@@ -1,5 +1,5 @@
 // Copyright © 2026 Petr Panteleyev
-// SPDX-License-Identifier: BSD-2-Clause
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.ui;
 
 import static org.panteleyev.fx.Controller.encodeStyleSheet;
@@ -9,12 +9,12 @@ final class StyleSheet {
     public static final double BIG_SPACING = 10.0;
     public static final double SMALL_SPACING = 5.0;
 
+    static final String CSS_REGISTER_AND_STACK_PANEL = "registerAndStackPanel";
     static final String CSS_REGISTER_CONTENT = "registerContent";
     static final String CSS_REGISTER_CONTENT_LABEL = "registerContentLabel";
-    static final String CSS_REGISTER_CONTENT_HIGHLIGHTED = "registerContentHighlighted";
     static final String CSS_REGISTER_LABEL = "registerLabel";
     static final String CSS_REGISTER_E_LABEL = "registerELabel";
-    static final String CSS_ROOT = "root";
+    static final String CSS_ROOT = "rootPanel";
     static final String CSS_TITLE_LABEL = "titleLabel";
     static final String CSS_LCD = "lcd";
     static final String CSS_DOT_LCD = "dotLcd";
@@ -30,6 +30,10 @@ final class StyleSheet {
     static final String CSS_KEYPAD_BUTTON = "keyPadButton";
     static final String CSS_F_LABEL = "fLabel";
     static final String CSS_K_LABEL = "kLabel";
+    static final String CSS_MEMORY_CELL_CONTENT = "memoryCellContent";
+    static final String CSS_MEMORY_CELL_CONTENT_HIGHLIGHTED = "memoryCellContentHighlighted";
+    static final String CSS_PROGRAM_DESCRIPTION = "programDescription";
+    static final String CSS_PROGRAM_INFO_GRID = "programInfoGrid";
 
     public static final String MAIN = encodeStyleSheet(getResourceAsString("/main.css"));
 

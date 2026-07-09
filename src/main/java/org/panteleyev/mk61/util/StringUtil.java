@@ -1,7 +1,5 @@
-/*
- Copyright © 2025 Petr Panteleyev <petr@panteleyev.org>
- SPDX-License-Identifier: BSD-2-Clause
- */
+// Copyright © 2025-2026 Petr Panteleyev
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.util;
 
 import static org.panteleyev.mk61.engine.Constants.DISPLAY_SIZE;
@@ -17,8 +15,12 @@ public final class StringUtil {
     }
 
     public static String padToDisplay(String s) {
-        var padCount = DISPLAY_SIZE - s.length();
-        return padCount > 0 ? s + " ".repeat(DISPLAY_SIZE - s.length()) : s;
+        return padRight(s, DISPLAY_SIZE);
+    }
+
+    public static String padRight(String s, int size) {
+        var padCount = size - s.length();
+        return padCount > 0 ? s + " ".repeat(padCount) : s;
     }
 
     private StringUtil() {

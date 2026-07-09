@@ -21,7 +21,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.controlsfx.control.SegmentedButton;
@@ -30,14 +29,9 @@ import org.panteleyev.mk61.engine.AngleMode;
 import org.panteleyev.mk61.engine.Engine;
 import org.panteleyev.mk61.engine.Indicator;
 import org.panteleyev.mk61.engine.KeyboardButton;
+import org.panteleyev.mk61.library.LibrarySerializer;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.UncheckedIOException;
 import java.util.List;
 
 import static javafx.scene.layout.GridPane.setHalignment;
@@ -52,16 +46,19 @@ import static org.panteleyev.fx.factories.grid.GridPaneFactory.gridPane;
 import static org.panteleyev.fx.factories.grid.GridRow.gridRow;
 import static org.panteleyev.mk61.Mk61Application.UI;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_ABOUT;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_APP_TITLE;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_EXIT;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_FILE;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_HELP;
-import static org.panteleyev.mk61.bundles.Internationalization.I18N_LOAD;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_OPEN;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_OPEN_PROGRAM;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_PROGRAM;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_REGISTERS_AND_MEMORY;
-import static org.panteleyev.mk61.bundles.Internationalization.I18N_SAVE;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_WINDOW;
-import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;
 import static org.panteleyev.mk61.ui.Accelerators.SHORTCUT_1;
+import static org.panteleyev.mk61.ui.Accelerators.SHORTCUT_2;
+import static org.panteleyev.mk61.ui.ProgramController.EXTENSION_FILTER;
 import static org.panteleyev.mk61.ui.StyleSheet.CSS_BLACK_BUTTON;
 import static org.panteleyev.mk61.ui.StyleSheet.CSS_BUTTON_GRID;
 import static org.panteleyev.mk61.ui.StyleSheet.CSS_DOT_LCD;
@@ -81,7 +78,7 @@ import static org.panteleyev.mk61.ui.StyleSheet.CSS_SWITCH_PANEL;
 import static org.panteleyev.mk61.ui.StyleSheet.CSS_TITLE_LABEL;
 
 public class Mk61Controller extends BaseController {
-    public static final String APP_TITLE = "МК-61";
+    public static final String APP_TITLE = string(UI, I18N_APP_TITLE);
 
     private final Engine engine = new Engine();
 
@@ -95,9 +92,6 @@ public class Mk61Controller extends BaseController {
             }
         }
     };
-
-    private static final FileChooser.ExtensionFilter EXTENSION_FILTER =
-            new FileChooser.ExtensionFilter("Дамп памяти", "*.txt");
 
     private final ToggleButton powerOnButton = powerOnButton();
 
@@ -117,6 +111,7 @@ public class Mk61Controller extends BaseController {
     };
 
     private final StackAndMemoryController stackAndMemoryController = new StackAndMemoryController();
+    private final ProgramController programController = new ProgramController(engine.deviceModel());
 
     public Mk61Controller(Stage stage) {
         super(stage);
@@ -156,13 +151,13 @@ public class Mk61Controller extends BaseController {
     private MenuBar createMenuBar() {
         return menuBar(
                 menu(string(UI, I18N_FILE),
-                        menuItem(string(UI, I18N_SAVE, ELLIPSIS), _ -> onSaveMemoryDump()),
-                        menuItem(string(UI, I18N_LOAD, ELLIPSIS), _ -> onLoadMemoryDump()),
+                        openMenuItem(),
                         new SeparatorMenuItem(),
                         menuItem(string(UI, I18N_EXIT), _ -> onExit())
                 ),
                 menu(string(UI, I18N_WINDOW),
-                        registersAndMemoryMenuItem()
+                        registersAndMemoryMenuItem(),
+                        programMenuItem()
                 ),
                 menu(string(UI, I18N_HELP),
                         menuItem(string(UI, I18N_ABOUT, ELLIPSIS), _ -> new AboutDialog().showAndWait())
@@ -170,9 +165,21 @@ public class Mk61Controller extends BaseController {
         );
     }
 
+    private MenuItem openMenuItem() {
+        var menuItem = menuItem(string(UI, I18N_OPEN, ELLIPSIS), this::onOpen);
+        menuItem.setAccelerator(Accelerators.SHORTCUT_O);
+        return menuItem;
+    }
+
     private MenuItem registersAndMemoryMenuItem() {
         var menuItem = menuItem(string(UI, I18N_REGISTERS_AND_MEMORY), this::onRegistersAndStackWindow);
         menuItem.setAccelerator(SHORTCUT_1);
+        return menuItem;
+    }
+
+    private MenuItem programMenuItem() {
+        var menuItem = menuItem(string(UI, I18N_PROGRAM), this::onProgram);
+        menuItem.setAccelerator(SHORTCUT_2);
         return menuItem;
     }
 
@@ -252,13 +259,27 @@ public class Mk61Controller extends BaseController {
                                 grayButton("В↑", "Вх", "СЧ", KeyboardButton.PUSH),
                                 eLabel()),
                         gridRow(grayButton("0", "10ˣ", "НОП", KeyboardButton.D0),
-                                grayButton("∙", "Ѻ", "⋀", KeyboardButton.DOT),
+                                grayButton("∙", "\uD83D\uDDD8", "⋀", KeyboardButton.DOT),
                                 grayButton("/-/", "АВТ", "⋁", KeyboardButton.SIGN),
                                 grayButton("ВП", "ПРГ", "⨁", KeyboardButton.EE),
                                 redButton("Cx", "CF", "ИНВ", KeyboardButton.CLEAR_X)),
                         gridRow(label(""), abcdLabel("a"), abcdLabel("b"), abcdLabel("c"), abcdLabel("d"))),
                 List.of(constraints, constraints, constraints, constraints, constraints),
                 List.of(CSS_BUTTON_GRID));
+    }
+
+    private void onOpen(ActionEvent ignored) {
+        var newFile = fileChooser(string(UI, I18N_OPEN_PROGRAM), List.of(EXTENSION_FILTER)).showOpenDialog(getStage());
+        if (newFile == null) return;
+
+        try (var in = new FileInputStream(newFile)) {
+            var program = LibrarySerializer.loadProgram(in);
+            engine.deviceModel().uploadProgram(program);
+            engine.deviceModel().uploadRegisters(program);
+            programController.setProgram(newFile, program);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void onExit() {
@@ -301,48 +322,11 @@ public class Mk61Controller extends BaseController {
         stackAndMemoryController.getStage().toFront();
     }
 
-    private void onSaveMemoryDump() {
-        var file = fileChooser("Сохранить дамп памяти", List.of(EXTENSION_FILTER)).showSaveDialog(getStage());
-        if (file == null) return;
-
-        try (var out = new OutputStreamWriter(new FileOutputStream(file))) {
-            var bytes = engine.deviceModel().getMemory();
-            for (int i = 0; i < bytes.length; i++) {
-                if (i != 0 && i % 10 == 0) {
-                    out.write("\n");
-                }
-                out.write(String.format("%02X ", bytes[i]));
-            }
-            out.flush();
-        } catch (IOException ex) {
-            throw new UncheckedIOException(ex);
+    private void onProgram(ActionEvent event) {
+        if (!programController.isVisible()) {
+            programController.show();
         }
-    }
-
-    private void onLoadMemoryDump() {
-        var file = fileChooser("Загрузить дамп памяти", List.of(EXTENSION_FILTER)).showOpenDialog(getStage());
-        if (file == null) return;
-
-        try (var reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
-            var codes = new int[PROGRAM_MEMORY_SIZE];
-            var index = 0;
-
-            var lines = reader.lines().toList();
-            outerLoop:
-            for (var line : lines) {
-                if (line.startsWith("#")) continue;
-
-                var strings = line.trim().split(" ");
-                for (var str : strings) {
-                    if (index >= codes.length) break outerLoop;
-                    codes[index++] = Integer.parseInt(str, 16);
-                }
-            }
-            engine.deviceModel().setMemoryUpload(codes);
-            engine.deviceModel().setMemoryUploadFlag(true);
-        } catch (IOException ex) {
-            throw new UncheckedIOException(ex);
-        }
+        programController.getStage().toFront();
     }
 
     @Override
@@ -441,6 +425,7 @@ public class Mk61Controller extends BaseController {
 
     private static Label buttonNodeUpperLabel(String text, String cssClass) {
         var label = new Label(text);
+        label.setEllipsisString("");
         label.getStyleClass().add(cssClass);
         setHalignment(label, HPos.CENTER);
         return label;
@@ -454,6 +439,7 @@ public class Mk61Controller extends BaseController {
         button.setMaxWidth(Double.MAX_VALUE);
         button.setMaxHeight(Double.MAX_VALUE);
         button.setFocusTraversable(false);
+        button.setEllipsisString("");
         return button;
     }
 
@@ -461,6 +447,7 @@ public class Mk61Controller extends BaseController {
         var button = new ToggleButton("Вкл");
         button.setOnAction(_ -> onPowerOn());
         button.setFocusTraversable(false);
+        button.setEllipsisString("");
         return button;
     }
 
@@ -468,6 +455,7 @@ public class Mk61Controller extends BaseController {
         var button = new ToggleButton(" ");
         button.setOnAction(_ -> onPowerOff());
         button.setFocusTraversable(false);
+        button.setEllipsisString("");
         return button;
     }
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright © 2026 Petr Panteleyev -->
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:org:panteleyev:mk61"
+           targetNamespace="urn:org:panteleyev:mk61"
+           elementFormDefault="qualified">
+
+    <xs:include schemaLocation="mk61_types.xsd"/>
+
+    <xs:element name="program" type="Mk61_Program"/>
+</xs:schema>

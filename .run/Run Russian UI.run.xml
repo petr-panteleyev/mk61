@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Russian UI" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.panteleyev.mk61.Mk61Application" />
+    <module name="mk61" />
+    <option name="VM_PARAMETERS" value="--enable-native-access=javafx.graphics -Duser.language=ru" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.panteleyev.mk61.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

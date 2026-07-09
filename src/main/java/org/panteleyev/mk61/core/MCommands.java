@@ -1,7 +1,5 @@
-/*
- https://github.com/cax/pmk-android/blob/master/pmk/src/com/cax/pmk/emulator/MCommands.java
- SPDX-License-Identifier: GPL-3.0-only
- */
+// https://github.com/cax/pmk-android/blob/master/pmk/src/com/cax/pmk/emulator/MCommands.java
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.core;
 
 final class MCommands {

@@ -1,21 +1,22 @@
 // Copyright © 2025-2026 Petr Panteleyev
-// SPDX-License-Identifier: BSD-2-Clause
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.ui;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import org.panteleyev.mk61.engine.DeviceModel;
 import org.panteleyev.mk61.engine.Register;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.panteleyev.fx.factories.BoxFactory.hBox;
 import static org.panteleyev.fx.factories.BoxFactory.vBox;
+import static org.panteleyev.fx.factories.MenuFactory.checkMenuItem;
 import static org.panteleyev.fx.factories.MenuFactory.menu;
 import static org.panteleyev.fx.factories.MenuFactory.menuBar;
 import static org.panteleyev.fx.factories.MenuFactory.menuItem;
@@ -28,16 +29,17 @@ import static org.panteleyev.mk61.bundles.Internationalization.I18N_CLOSE;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_FILE;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_REGISTERS;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_REGISTERS_AND_MEMORY;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_SHOW_MNEMONICS;
 import static org.panteleyev.mk61.bundles.Internationalization.I18N_STACK;
+import static org.panteleyev.mk61.bundles.Internationalization.I18N_VIEW;
 import static org.panteleyev.mk61.engine.DeviceModel.CALL_STACK_SIZE;
-import static org.panteleyev.mk61.engine.DeviceModel.PROGRAM_MEMORY_SIZE;
-import static org.panteleyev.mk61.engine.DeviceModel.REGISTERS_SIZE;
 import static org.panteleyev.mk61.settings.Settings.settings;
-import static org.panteleyev.mk61.ui.StyleSheet.CSS_MEMORY_PANEL;
+import static org.panteleyev.mk61.ui.Accelerators.SHORTCUT_M;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_AND_STACK_PANEL;
 import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_CONTENT;
-import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_CONTENT_HIGHLIGHTED;
 import static org.panteleyev.mk61.ui.StyleSheet.CSS_REGISTER_CONTENT_LABEL;
-import static org.panteleyev.mk61.util.StringUtil.addrToString;
+import static org.panteleyev.mk61.ui.StyleSheet.CSS_ROOT;
+import static org.panteleyev.mk61.ui.StyleSheet.SMALL_SPACING;
 import static org.panteleyev.mk61.util.StringUtil.padToDisplay;
 import static org.panteleyev.mk61.util.StringUtil.pcToString;
 
@@ -46,7 +48,6 @@ public class StackAndMemoryController extends BaseController {
     private static final String INITIAL_REGISTER = padToDisplay(Register.toString(0));
     private static final String REGISTER_OFF = padToDisplay("");
 
-    private final List<Label> registers = new ArrayList<>(REGISTERS_SIZE);
     private final List<Label> callStack = new ArrayList<>(CALL_STACK_SIZE);
 
     private final Label xLabel = registerContentLabel("");
@@ -57,25 +58,22 @@ public class StackAndMemoryController extends BaseController {
 
     private final Label pcLabel = registerContentLabel(INITIAL_ADDRESS);
 
-    private final long[] registerValues = new long[REGISTERS_SIZE];
+//    private final long[] registerValues = new long[REGISTERS_SIZE];
+
+    // Registers panel
+    private final RegistersPanel registersPanel = new RegistersPanel();
 
     // Memory panel
-    private final Label[] addrs = new Label[PROGRAM_MEMORY_SIZE];
-    private final Label[] cells = new Label[PROGRAM_MEMORY_SIZE];
-    private int previousPc = 0;
+    private final MemoryPanel memoryPanel = new MemoryPanel();
+
+    private final AtomicBoolean showMnemonics = new AtomicBoolean(true);
 
     public StackAndMemoryController() {
-        Arrays.fill(registerValues, 0);
-
-        for (int i = 0; i < REGISTERS_SIZE; i++) {
-            registers.add(registerContentLabel(""));
-        }
-
         for (int i = 0; i < CALL_STACK_SIZE; i++) {
             callStack.add(registerContentLabel(INITIAL_ADDRESS));
         }
 
-        var center = vBox(10.0,
+        var center = vBox(20.0,
                 hBox(10.0,
                         buildRegistersPanel(),
                         buildStackPanel(),
@@ -83,10 +81,12 @@ public class StackAndMemoryController extends BaseController {
                 ),
                 buildMemoryPanel()
         );
-        center.getStyleClass().add("registerAndStackPanel");
+        center.getStyleClass().add(CSS_REGISTER_AND_STACK_PANEL);
         center.setMouseTransparent(true);
 
-        setupWindow(new BorderPane(center, createMenuBar(), null, null, null));
+        var root = new BorderPane(center, createMenuBar(), null, null, null);
+        root.getStyleClass().add(CSS_ROOT);
+        setupWindow(root);
 
         getStage().setResizable(false);
         settings().loadStagePosition(this);
@@ -101,26 +101,13 @@ public class StackAndMemoryController extends BaseController {
         return menuBar(
                 menu(string(UI, I18N_FILE),
                         menuItem(string(UI, I18N_CLOSE), _ -> onClose())
-                )
+                ),
+                menu(string(UI, I18N_VIEW),
+                        showMnemonicsMenuItem())
         );
     }
 
-    @Override
-    public boolean isVisible() {
-        return getStage().isShowing();
-    }
-
-    public void show() {
-        getStage().show();
-    }
-
     public void turnOn() {
-        Arrays.fill(registerValues, 0);
-
-        for (var label : registers) {
-            label.setText(INITIAL_REGISTER);
-        }
-
         for (var label : callStack) {
             label.setText("00");
         }
@@ -133,16 +120,11 @@ public class StackAndMemoryController extends BaseController {
         tLabel.setText(INITIAL_REGISTER);
         x1Label.setText(INITIAL_REGISTER);
 
-        for (var cell : cells) {
-            cell.setText("00");
-        }
+        registersPanel.turnOn();
+        memoryPanel.turnOn();
     }
 
     public void turnOff() {
-        for (var label : registers) {
-            label.setText(REGISTER_OFF);
-        }
-
         for (var label : callStack) {
             label.setText("  ");
         }
@@ -155,13 +137,12 @@ public class StackAndMemoryController extends BaseController {
         tLabel.setText(REGISTER_OFF);
         x1Label.setText(REGISTER_OFF);
 
-        for (var cell : cells) {
-            cell.setText("  ");
-        }
+        registersPanel.turnOff();
+        memoryPanel.turnOff();
     }
 
     private Node buildStackPanel() {
-        return vBox(5.0,
+        return vBox(SMALL_SPACING,
                 registerNameLabel(string(UI, I18N_STACK, COLON)),
                 gridPane(List.of(
                         gridRow(registerNameLabel("T:"), tLabel),
@@ -174,7 +155,7 @@ public class StackAndMemoryController extends BaseController {
     }
 
     private Node buildCallStackPanel() {
-        return vBox(5.0,
+        return vBox(SMALL_SPACING,
                 registerNameLabel("В/О:"),
                 gridPane(List.of(
                         gridRow(callStack.get(4)),
@@ -187,71 +168,30 @@ public class StackAndMemoryController extends BaseController {
     }
 
     private Node buildRegistersPanel() {
-        var grid1 = new GridPane();
+        return vBox(SMALL_SPACING,
+                registerNameLabel(string(UI, I18N_REGISTERS, COLON)),
+                registersPanel
+        );
+    }
 
-        int row = 0;
-        int column = 0;
-        for (var i = 0; i < REGISTERS_SIZE; i++) {
-            if (i != 0 && i % 8 == 0) {
-                row = 0;
-                column += 2;
-            }
-            grid1.add(registerNameLabel(" " + (Integer.toString(i, 16) + ":").toUpperCase()), column, row);
-            grid1.add(registers.get(i), column + 1, row++);
-        }
-
-        return vBox(5.0,
-                registerNameLabel(" " + string(UI, I18N_REGISTERS, COLON)),
-                grid1
+    private Node buildMemoryPanel() {
+        return vBox(SMALL_SPACING,
+                registerNameLabel("Память:"),
+                memoryPanel
         );
     }
 
     private Node buildPcPanel() {
-        return hBox(5.0, registerNameLabel("PC:"), pcLabel);
+        return hBox(SMALL_SPACING, registerNameLabel("PC:"), pcLabel);
     }
-
-    private Node buildMemoryPanel() {
-        var grid = new GridPane(10, 5);
-
-        int row = -1;
-        int column = 0;
-
-        for (int i = 0; i < PROGRAM_MEMORY_SIZE; i++) {
-            if (i % 10 == 0) {
-                row++;
-                column = 0;
-            }
-
-            addrs[i] = registerNameLabel(addrToString(i) + ":");
-            cells[i] = registerContentLabel("00");
-            grid.add(addrs[i], column++, row);
-            grid.add(cells[i], column++, row);
-        }
-
-        var panel = vBox(10, registerNameLabel("Память:"), grid);
-        panel.getStyleClass().add(CSS_MEMORY_PANEL);
-        grid.getStyleClass().add(CSS_MEMORY_PANEL);
-        return grid;
-    }
-
 
     public void showPc(int pc) {
-        var effectivePc = DeviceModel.getRealPc10(pc);
-        if (effectivePc == previousPc) return;
-
-        addrs[previousPc].getStyleClass().remove(CSS_REGISTER_CONTENT_HIGHLIGHTED);
-        addrs[previousPc].getStyleClass().add(CSS_REGISTER_CONTENT_LABEL);
-
-        addrs[effectivePc].getStyleClass().remove(CSS_REGISTER_CONTENT_LABEL);
-        addrs[effectivePc].getStyleClass().add(CSS_REGISTER_CONTENT_HIGHLIGHTED);
-
-        previousPc = effectivePc;
+        memoryPanel.showPc(DeviceModel.getRealPc10(pc));
     }
 
     public void showMemory(int[] bytes) {
-        for (int i = 0; i < Math.min(bytes.length, cells.length); i++) {
-            cells[i].setText(String.format("%02X", bytes[i]));
-        }
+        memoryPanel.showMemory(bytes, showMnemonics.get());
+        getStage().sizeToScene();
     }
 
     public void renderDeviceModel(DeviceModel deviceModel) {
@@ -261,14 +201,7 @@ public class StackAndMemoryController extends BaseController {
         tLabel.setText(padToDisplay(Register.toString(deviceModel.getT())));
         x1Label.setText(padToDisplay(Register.toString(deviceModel.getX1())));
 
-        var newRegisters = deviceModel.getRegisters();
-        for (int i = 0; i < REGISTERS_SIZE; i++) {
-            var newValue = newRegisters[i];
-            if (registerValues[i] != newValue) {
-                registerValues[i] = newValue;
-                registers.get(i).setText(padToDisplay(Register.toString(newValue)));
-            }
-        }
+        registersPanel.showRegisters(deviceModel.getRegisters());
 
         var callStackValues = deviceModel.getCallStack();
         for (int i = 0; i < CALL_STACK_SIZE; i++) {
@@ -276,19 +209,29 @@ public class StackAndMemoryController extends BaseController {
         }
 
         pcLabel.setText(pcToString(deviceModel.getPc()));
-        showPc(deviceModel.getPc());
         showMemory(deviceModel.getMemory());
+        showPc(deviceModel.getPc());
     }
 
     private static Label registerNameLabel(String text) {
         var label = new Label(text);
+        label.setEllipsisString("");
         label.getStyleClass().add(CSS_REGISTER_CONTENT_LABEL);
         return label;
     }
 
     private static Label registerContentLabel(String text) {
         var label = new Label(text);
+        label.setEllipsisString("");
         label.getStyleClass().add(CSS_REGISTER_CONTENT);
         return label;
+    }
+
+    private MenuItem showMnemonicsMenuItem() {
+        var menuItem = checkMenuItem(string(UI, I18N_SHOW_MNEMONICS));
+        menuItem.setSelected(showMnemonics.get());
+        menuItem.setOnAction(_ -> showMnemonics.set(!showMnemonics.get()));
+        menuItem.setAccelerator(SHORTCUT_M);
+        return menuItem;
     }
 }

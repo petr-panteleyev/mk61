@@ -1,5 +1,5 @@
 // Copyright © 2025-2026 Petr Panteleyev
-// SPDX-License-Identifier: BSD-2-Clause
+// SPDX-License-Identifier: GPL-3.0-only
 package org.panteleyev.mk61.engine;
 
 import java.util.Arrays;
@@ -104,5 +104,17 @@ public final class Register {
         int shift = index * 4;
         long clearMask = ~((long) TETRAD_MASK << shift);
         return x & clearMask | ((long) (value & 0xF) << shift);
+    }
+
+    /**
+     * Получает тетраду с заданным индексом. Операция обратная {@link #setTetrad(long, int, int)}.
+     *
+     * @param x     регистр
+     * @param index номер тетрады [0..11]
+     * @return значение тетрады
+     */
+    public static int getTetrad(long x, int index) {
+        int shift = index * 4;
+        return (int) ((x >> shift) & 0xF);
     }
 }
