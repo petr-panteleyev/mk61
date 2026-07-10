@@ -30,8 +30,12 @@ final class StyleSheet {
     static final String CSS_KEYPAD_BUTTON = "keyPadButton";
     static final String CSS_F_LABEL = "fLabel";
     static final String CSS_K_LABEL = "kLabel";
+
+    static final String CSS_MEMORY_CELL_PANEL = "memoryCellPanel";
+    static final String CSS_MEMORY_CELL_PANEL_HIGHLIGHTED = "memoryCellPanelHighlighted";
     static final String CSS_MEMORY_CELL_CONTENT = "memoryCellContent";
     static final String CSS_MEMORY_CELL_CONTENT_HIGHLIGHTED = "memoryCellContentHighlighted";
+
     static final String CSS_PROGRAM_DESCRIPTION = "programDescription";
     static final String CSS_PROGRAM_INFO_GRID = "programInfoGrid";
 

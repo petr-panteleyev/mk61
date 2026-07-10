@@ -18,7 +18,7 @@ public class Decoder {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e'
     };
 
-    private static final char SPACE = '\u2009';
+    private static final char SPACE = ' ';
     private static final String F = "F" + SPACE;
     private static final String K = "K" + SPACE;
 
@@ -27,7 +27,7 @@ public class Decoder {
             entry(0x11, "-"),
             entry(0x12, "×"),
             entry(0x13, "÷"),
-            entry(0x14, "←→"),
+            entry(0x14, "↔"),
             entry(0x0E, "В↑"),
             entry(0x0A, "∙"),
             entry(0x0B, "/-/"),
@@ -49,7 +49,7 @@ public class Decoder {
             entry(0x1D, F + "cos"),
             entry(0x1E, F + "tg"),
             entry(0x20, F + "π"),
-            entry(0x21, F + "√¯"),
+            entry(0x21, F + "√‾"),
             entry(0x22, F + "x²"),
             entry(0x23, F + "1/x"),
             entry(0x24, F + "xʸ"),

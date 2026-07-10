@@ -10,4 +10,6 @@ open module mk {
     requires java.logging;
     requires java.xml;
     requires jakarta.xml.bind;
+    requires org.glassfish.jaxb.core;
+    requires org.glassfish.jaxb.runtime;
 }

@@ -164,6 +164,7 @@ public class ProgramController extends BaseController {
     }
 
     private Tab programTab() {
+        memoryPanel.showMemory(program.cells(), true);
         var pane = new BorderPane(memoryPanel);
         BorderPane.setMargin(memoryPanel, new Insets(20, 5, 5, 5));
         return tab(string(UI, I18N_PROGRAM), pane);

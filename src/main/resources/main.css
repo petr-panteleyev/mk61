@@ -1,3 +1,19 @@
+@font-face {
+    src: url('fonts/JetBrainsMono-Regular.ttf');
+}
+@font-face {
+    src: url('fonts/JetBrainsMono-Bold.ttf');
+}
+@font-face {
+    src: url('fonts/Pixel-LCD-7.ttf');
+}
+@font-face {
+    src: url('fonts/IoskeleyMono-Regular.ttf');
+}
+@font-face {
+    src: url('fonts/IoskeleyMono-Bold.ttf');
+}
+
 .keyPadButton {
     -fx-font-size: xx-large;
     -fx-text-fill: black;
@@ -6,7 +22,7 @@
     -fx-background-radius: 7;
     -fx-background-insets: 0;
     -fx-font-family: 'JetBrains Mono';
-    -fx-padding: 10 9 10 9;
+    -fx-padding: 12 11 12 11;
 }
 
 .fButton {
@@ -58,15 +74,15 @@
     -fx-font-size: large;
     -fx-text-fill: yellow;
     -fx-font-weight: bold;
-    -fx-font-family: 'JetBrains Mono';
-    -fx-padding: 0 -5 5 -5;
+    -fx-font-family: 'Ioskeley Mono';
+    -fx-padding: 0 -6 5 -6;
 }
 
 .kLabel {
     -fx-font-size: large;
     -fx-text-fill: lightblue;
     -fx-font-weight: bold;
-    -fx-font-family: 'JetBrains Mono';
+    -fx-font-family: 'Ioskeley Mono';
     -fx-padding: 0 -5 5 -5;
 }
 
@@ -142,13 +158,13 @@
 }
 
 .registerContentLabel {
-    -fx-font-family: 'JetBrains Mono';
+    -fx-font-family: 'Ioskeley Mono';
     -fx-text-fill: white;
     -fx-font-size: 20;
 }
 
 .registerContent {
-    -fx-font-family: 'JetBrains Mono';
+    -fx-font-family: 'Ioskeley Mono';
     -fx-background-color: #283f37;
     -fx-text-fill: lightgreen;
     -fx-font-weight: normal;
@@ -164,22 +180,28 @@
 
 .mnemonicsAddress {
     -fx-background-color: #283f37;
-    -fx-font-family: 'JetBrains Mono';
+    -fx-font-family: 'Ioskeley Mono';
     -fx-font-size: 20;
     -fx-text-fill: white;
 }
 
-.memoryCellContentHighlighted {
-    -fx-font-family: 'JetBrains Mono';
+.memoryCellPanel {
+    -fx-background-color: #283f37;
+}
+
+.memoryCellPanelHighlighted {
     -fx-background-color: lightgreen;
+}
+
+.memoryCellContentHighlighted {
+    -fx-font-family: 'Ioskeley Mono';
     -fx-text-fill: #283f37;
     -fx-font-weight: bold;
     -fx-font-size: 20;
 }
 
 .memoryCellContent {
-    -fx-font-family: 'JetBrains Mono';
-    -fx-background-color: #283f37;
+    -fx-font-family: 'Ioskeley Mono';
     -fx-text-fill: lightgreen;
     -fx-font-weight: normal;
     -fx-font-size: 20;
@@ -219,10 +241,4 @@
 .programInfoGrid {
     -fx-hgap: 5;
     -fx-vgap: 5;
-}
-
-.check-box {
-    -fx-font-family: 'JetBrains Mono';
-    -fx-text-fill: white;
-    -fx-font-size: 18;
 }

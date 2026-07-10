@@ -4,7 +4,6 @@ package org.panteleyev.mk61;
 
 import javafx.application.Application;
 import javafx.scene.control.Alert;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.panteleyev.mk61.bundles.UiBundle;
 import org.panteleyev.mk61.ui.Mk61Controller;
@@ -49,9 +48,6 @@ public class Mk61Application extends Application {
         files().initialize();
         settings().load();
 
-        Font.loadFont(getResourceUrl("/fonts/Pixel-LCD-7.ttf"), 14);
-        Font.loadFont(getResourceUrl("/fonts/JetBrainsMono-Medium.ttf"), 14);
-
         var logProperties = LOG_PROPERTIES.replace("%FILE_PATTERN%",
                 files().getLogDirectory().resolve(LOG_FILE_NAME).toString().replace("\\", "/"));
         try (var inputStream = new ByteArrayInputStream(logProperties.getBytes(UTF_8))) {
@@ -69,14 +65,6 @@ public class Mk61Application extends Application {
         runLater(() -> new Alert(Alert.AlertType.ERROR, e.toString()).showAndWait());
     }
 
-    public static Logger logger() {
-        return LOGGER;
-    }
-
-    static void main(String[] args) {
-        launch(args);
-    }
-
     public static String getResourceAsString(String name) {
         try (var in = Mk61Application.class.getResourceAsStream(name)) {
             return new String(requireNonNull(in, "Resource " + name + " not found").readAllBytes(), UTF_8);
@@ -85,7 +73,7 @@ public class Mk61Application extends Application {
         }
     }
 
-    public static String getResourceUrl(String name) {
-        return requireNonNull(Mk61Application.class.getResource(name), "Resource " + name + " not found").toString();
+    public static void main(String[] args) {
+        launch(args);
     }
 }
