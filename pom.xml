@@ -11,6 +11,28 @@
     <packaging>jar</packaging>
     <name>MK-61</name>
 
+    <licenses>
+        <license>
+            <name>GPL-3.0</name>
+            <url>https://opensource.org/license/gpl-3.0</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Petr Panteleyev</name>
+            <email>petr@panteleyev.org</email>
+            <organization>panteleyev.org</organization>
+            <organizationUrl>https://github.com/petr-panteleyev</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/petr-panteleyev/mk61.git</connection>
+        <developerConnection>scm:git:ssh://github.com:petr-panteleyev/mk61.git</developerConnection>
+        <url>https://github.com/petr-panteleyev/mk61/tree/master</url>
+    </scm>
+
     <profiles>
         <profile>
             <id>win</id>
@@ -96,6 +118,8 @@
         <mavenExecPluginVersion>3.5.0</mavenExecPluginVersion>
         <jpackageMavenPluginVersion>1.8.0</jpackageMavenPluginVersion>
         <jaxbMavenPluginVersion>4.0.16</jaxbMavenPluginVersion>
+        <mavenSitePluginVersion>3.21.0</mavenSitePluginVersion>
+        <mavenProjectInfoReportsPluginVersion>3.5.0</mavenProjectInfoReportsPluginVersion>
         <!-- Dependencies -->
         <javaFxVersion>26.0.1</javaFxVersion>
         <controlsFxVersion>11.2.2</controlsFxVersion>
@@ -254,6 +278,16 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${mavenSitePluginVersion}</version>
+                <configuration>
+                    <inputEncoding>UTF-8</inputEncoding>
+                    <outputEncoding>UTF-8</outputEncoding>
+                    <generateReports>false</generateReports>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>${mavenDependencyPluginVersion}</version>
                 <executions>
@@ -380,17 +414,4 @@
             </plugin>
         </plugins>
     </build>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>${mavenSurefireReportPluginVersion}</version>
-                <configuration>
-                    <outputName>MK-61</outputName>
-                    <showSuccess>false</showSuccess>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
 </project>

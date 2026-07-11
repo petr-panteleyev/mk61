@@ -63,13 +63,13 @@ public class UiBundle extends ListResourceBundle {
                 {I18N_APP_TITLE, "Elektronika MK-61"},
                 {I18N_MK61_PROGRAM, "MK-61 Program"},
                 {I18N_OPEN_PROGRAM, "Open Program"},
-                {I18N_READ_FROM_MEMORY, "Read from memory"},
-                {I18N_SAVE_TO_MEMORY, "Save to memory"},
+                {I18N_READ_FROM_MEMORY, "Read from Memory"},
+                {I18N_SAVE_TO_MEMORY, "Write to Memory"},
                 {I18N_STACK, "Stack"},
                 {I18N_REGISTERS, "Registers"},
                 {I18N_REGISTERS_AND_MEMORY, "Registers and Memory"},
                 {I18N_SAVE_PROGRAM, "Save Program"},
-                {I18N_SHOW_MNEMONICS, "Show mnemonics"},
+                {I18N_SHOW_MNEMONICS, "Show Mnemonics"},
                 //
                 {I18N_COPYRIGHT, """
                     Copyright © 2025-2026  Petr Panteleyev <petr@panteleyev.org>
